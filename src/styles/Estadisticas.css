@@ -1,0 +1,90 @@
+.estadisticas-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.estadisticas-page h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.filtros-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filtro-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filtro-group label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.filtro-group input {
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.filtro-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.tabla-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+
+.tabla-registros {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-registros thead {
+  background-color: #f3f4f6;
+}
+
+.tabla-registros th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.tabla-registros td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.tabla-registros tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.tabla-registros tbody tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .filtros-container {
+    grid-template-columns: 1fr;
+  }
+}
