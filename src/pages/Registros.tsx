@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { todosLosMockRegistros } from '../services/mockData';
 import type { RegistroINE } from '../types';
 import { format } from 'date-fns';
 import '../styles/Registros.css';
@@ -14,12 +13,12 @@ export const Registros = () => {
   }, []);
 
   const cargarRegistros = async () => {
-    // Simular carga con datos mock
+    // TODO: Implementar llamada a API real
     setIsLoading(true);
     setTimeout(() => {
-      setRegistros(todosLosMockRegistros);
+      setRegistros([]); // Sin datos por ahora
       setIsLoading(false);
-    }, 300);
+    }, 500);
   };
 
   const registrosFiltrados = registros.filter(registro =>

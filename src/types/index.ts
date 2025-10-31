@@ -3,6 +3,8 @@
 export interface Usuario {
   id: number;
   username: string;
+  nombre?: string;
+  apellido?: string;
   email: string;
   nombres_asignados: string[]; // números de WhatsApp asignados
   rol: 'admin' | 'usuario';
@@ -41,9 +43,10 @@ export interface CodigoPostal {
 }
 
 export interface EstadisticasGeneral {
-  total_registros: number;
-  registros_hoy: number;
-  registros_mes: number;
+  totalRegistros: number;
+  registrosHoy: number;
+  registrosMes: number;
+  numerosActivos: number;
   registros_por_numero: { numero: string; cantidad: number }[];
   registros_por_estado: { estado: string; cantidad: number }[];
   registros_por_seccion: { seccion: string; cantidad: number }[];
@@ -55,6 +58,7 @@ export interface FiltrosEstadisticas {
   from_number?: string;
   estado?: string;
   seccion?: string;
+  userId?: number;
 }
 
 export interface LoginCredentials {

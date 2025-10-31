@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import { todosLosMockRegistros } from '../services/mockData';
 import type { RegistroINE } from '../types';
 import 'leaflet/dist/leaflet.css';
 import '../styles/Mapa.css';
@@ -15,10 +14,10 @@ export const Mapa = () => {
   }, []);
 
   const cargarDatos = async () => {
-    // Simular carga con datos mock
+    // TODO: Implementar llamada a API real
     setIsLoading(true);
     setTimeout(() => {
-      setRegistros(todosLosMockRegistros);
+      setRegistros([]); // Sin datos por ahora
       setIsLoading(false);
     }, 500);
   };

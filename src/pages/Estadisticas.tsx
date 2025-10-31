@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { todosLosMockRegistros } from '../services/mockData';
 import type { RegistroINE, FiltrosEstadisticas } from '../types';
 import { format } from 'date-fns';
 import '../styles/Estadisticas.css';
@@ -14,12 +13,12 @@ export const Estadisticas = () => {
   }, [filtros]);
 
   const cargarRegistros = async () => {
-    // Simular carga con datos mock
+    // TODO: Implementar llamada a API real
     setIsLoading(true);
     setTimeout(() => {
-      let datosFiltrados = [...todosLosMockRegistros];
+      let datosFiltrados: RegistroINE[] = []; // Sin datos por ahora
       
-      // Aplicar filtros
+      // Aplicar filtros (cuando haya datos)
       if (filtros.from_number) {
         datosFiltrados = datosFiltrados.filter(r => 
           r.from_number.includes(filtros.from_number!)

@@ -6,7 +6,9 @@ const router = Router();
 // GET /estadisticas/general
 router.get('/general', async (req: Request, res: Response) => {
   try {
+    console.log('🔍 Petición a /estadisticas/general recibida');
     const { userId } = req.query;
+    console.log('userId recibido:', userId);
 
     let whereClause = '';
     let params: any[] = [];
@@ -39,11 +41,45 @@ router.get('/general', async (req: Request, res: Response) => {
     const [activosRows] = await pool.execute(numerosQuery, numerosParams);
     const numerosActivos = (activosRows as any)[0].activos;
 
+    // Registros por número de WhatsApp
+    const [numeroRows] = await pool.execute(`
+      SELECT from_number as numero, COUNT(*) as cantidad 
+      FROM ine_registros 
+      ${whereClause} 
+      GROUP BY from_number 
+      ORDER BY cantidad DESC
+    `, params);
+    const registros_por_numero = numeroRows as { numero: string; cantidad: number }[];
+
+    // Registros por estado (extrayendo CP del Domicilio)
+    const [estadoRows] = await pool.execute(`
+      SELECT cp.d_estado as estado, COUNT(DISTINCT ir.id) as cantidad
+      FROM ine_registros ir
+      JOIN codigos_postales cp ON cp.d_codigo = REGEXP_SUBSTR(ir.Domicilio, '[0-9]{5}')
+      ${whereClause}
+      GROUP BY cp.d_estado
+      ORDER BY cantidad DESC
+    `, params);
+    const registros_por_estado = estadoRows as { estado: string; cantidad: number }[];
+
+    // Registros por sección
+    const [seccionRows] = await pool.execute(`
+      SELECT Seccion as seccion, COUNT(*) as cantidad 
+      FROM ine_registros 
+      ${whereClause} 
+      GROUP BY Seccion 
+      ORDER BY cantidad DESC
+    `, params);
+    const registros_por_seccion = seccionRows as { seccion: string; cantidad: number }[];
+
     res.json({
       totalRegistros,
       registrosHoy,
       registrosMes,
-      numerosActivos
+      numerosActivos,
+      registros_por_numero,
+      registros_por_estado,
+      registros_por_seccion
     });
   } catch (error) {
     console.error('Error obteniendo estadísticas:', error);

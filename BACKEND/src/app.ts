@@ -1,5 +1,5 @@
-import express from 'express';
-import cors from 'cors';
+import * as express from 'express';
+import * as cors from 'cors';
 import { testConnection } from './database';
 import authRouter from './routes/auth';
 import registrosRouter from './routes/registros';
@@ -16,9 +16,9 @@ testConnection().catch((err) => console.error('Error conectando a DB:', err));
 
 app.get('/', (_req, res) => res.json({ ok: true, msg: 'Backend Proyecto-INE' }));
 
-app.use('/auth', authRouter);
-app.use('/registros', registrosRouter);
-app.use('/estadisticas', estadisticasRouter);
-app.use('/mapa', mapaRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/registros', registrosRouter);
+app.use('/api/estadisticas', estadisticasRouter);
+app.use('/api/mapa', mapaRouter);
 
 export default app;

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Usuario } from '../types';
-import { mockUsuario } from '../services/mockData';
+import { authService } from '../services/api';
 
 interface AuthContextType {
   usuario: Usuario | null;
@@ -20,36 +20,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar si hay un token guardado
-    const savedToken = localStorage.getItem('token');
+    // Limpiar datos corruptos del localStorage
     const savedUsuario = localStorage.getItem('usuario');
+    if (savedUsuario === 'undefined' || savedUsuario === null || savedUsuario === '') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+    }
+
+    // Verificar si hay datos válidos
+    const savedToken = localStorage.getItem('token');
+    const cleanSavedUsuario = localStorage.getItem('usuario');
     
-    if (savedToken && savedUsuario) {
-      setToken(savedToken);
-      setUsuario(JSON.parse(savedUsuario));
-    } else {
-      // AUTO-LOGIN con usuario de prueba para desarrollo
-      const mockToken = 'mock-token-' + Date.now();
-      setToken(mockToken);
-      setUsuario(mockUsuario);
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('usuario', JSON.stringify(mockUsuario));
+    if (savedToken && cleanSavedUsuario && cleanSavedUsuario !== 'undefined') {
+      try {
+        setToken(savedToken);
+        setUsuario(JSON.parse(cleanSavedUsuario));
+      } catch (error) {
+        console.error('Error parsing saved user data:', error);
+        // Limpiar datos corruptos
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+      }
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (_username: string, _password: string) => {
-    // Simular login sin backend
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const mockToken = 'mock-token-' + Date.now();
-        setToken(mockToken);
-        setUsuario(mockUsuario);
-        localStorage.setItem('token', mockToken);
-        localStorage.setItem('usuario', JSON.stringify(mockUsuario));
-        resolve();
-      }, 500);
-    });
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await authService.login({ username, password });
+      setToken(response.token);
+      setUsuario(response.usuario);
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('usuario', JSON.stringify(response.usuario));
+    } catch (error) {
+      console.error('Error en login:', error);
+      throw error;
+    }
   };
 
   const logout = () => {

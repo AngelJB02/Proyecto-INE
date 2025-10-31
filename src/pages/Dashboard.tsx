@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { mockEstadisticas } from '../services/mockData';
+import { estadisticasService } from '../services/api';
 import { StatsCard } from '.././components/StatsCard';
 import { BarChart } from '.././components/BarChart';
 import type { EstadisticasGeneral } from '../types';
@@ -10,18 +10,35 @@ export const Dashboard = () => {
   const { usuario } = useAuth();
   const [estadisticas, setEstadisticas] = useState<EstadisticasGeneral | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasLoaded = useRef(false); // Flag para evitar doble carga
 
   useEffect(() => {
-    cargarEstadisticas();
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      cargarEstadisticas();
+    }
   }, []);
 
   const cargarEstadisticas = async () => {
-    // Simular carga de datos
-    setIsLoading(true);
-    setTimeout(() => {
-      setEstadisticas(mockEstadisticas);
+    try {
+      setIsLoading(true);
+      const data = await estadisticasService.getGeneral({ userId: usuario?.id });
+      setEstadisticas(data);
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+      // Mantener valores por defecto en caso de error
+      setEstadisticas({
+        totalRegistros: 0,
+        registrosHoy: 0,
+        registrosMes: 0,
+        numerosActivos: 0,
+        registros_por_numero: [],
+        registros_por_estado: [],
+        registros_por_seccion: []
+      });
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   if (isLoading) {
@@ -38,25 +55,25 @@ export const Dashboard = () => {
       <div className="stats-grid">
         <StatsCard
           title="Total de Registros"
-          value={estadisticas?.total_registros || 0}
+          value={estadisticas?.totalRegistros || 0}
           icon="📋"
           color="blue"
         />
         <StatsCard
           title="Registros Hoy"
-          value={estadisticas?.registros_hoy || 0}
+          value={estadisticas?.registrosHoy || 0}
           icon="📅"
           color="green"
         />
         <StatsCard
           title="Registros Este Mes"
-          value={estadisticas?.registros_mes || 0}
+          value={estadisticas?.registrosMes || 0}
           icon="📊"
           color="orange"
         />
         <StatsCard
           title="Números Activos"
-          value={estadisticas?.registros_por_numero.length || 0}
+          value={estadisticas?.numerosActivos || 0}
           icon="📱"
           color="purple"
         />
