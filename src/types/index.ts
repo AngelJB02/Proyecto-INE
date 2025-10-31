@@ -22,6 +22,7 @@ export interface RegistroINE {
   Seccion: string | null;
   Vigencia: string | null;
   fecha_registro: Date;
+  nombre_contacto: string;
 }
 
 export interface CodigoPostal {

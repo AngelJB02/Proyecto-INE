@@ -133,13 +133,8 @@
   margin: 0 0.5rem;
 }
 
-@media (max-width: 768px) {
-  .pagination {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .pagination span {
-    order: -1;
-  }
+.operador-column {
+  background-color: #f0f8ff;
+  font-weight: 600;
+  color: #2563eb;
 }

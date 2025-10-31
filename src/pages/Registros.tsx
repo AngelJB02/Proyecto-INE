@@ -84,28 +84,28 @@ export const Registros = () => {
             <table className="tabla-registros">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
+                  <th>N°</th>
+                  <th className="operador-column">Operador</th>
                   <th>CURP</th>
+                  <th>Nombre</th>
                   <th>Clave Elector</th>
                   <th>Domicilio</th>
                   <th>Sección</th>
                   <th>Vigencia</th>
-                  <th>WhatsApp</th>
                   <th>Fecha Registro</th>
                 </tr>
               </thead>
               <tbody>
-                {registrosFiltrados.map((registro) => (
+                {registrosFiltrados.map((registro, index) => (
                   <tr key={registro.id}>
-                    <td>{registro.id}</td>
-                    <td>{registro.Nombre || 'N/A'}</td>
+                    <td>{index + 1}</td>
+                    <td className="operador-column">{registro.nombre_contacto}</td>
                     <td>{registro.CURP || 'N/A'}</td>
+                    <td>{registro.Nombre || 'N/A'}</td>
                     <td>{registro.ClaveDeElector || 'N/A'}</td>
                     <td>{registro.Domicilio || 'N/A'}</td>
                     <td>{registro.Seccion || 'N/A'}</td>
                     <td>{registro.Vigencia || 'N/A'}</td>
-                    <td>{registro.from_number}</td>
                     <td>{format(new Date(registro.fecha_registro), 'dd/MM/yyyy HH:mm')}</td>
                   </tr>
                 ))}
