@@ -32,7 +32,7 @@ export const Dashboard = () => {
     <div className="dashboard">
       <div className="dashboard-header">
         <h1>Dashboard</h1>
-        <p>Bienvenido, {usuario?.username}</p>
+        <p>Bienvenido, {usuario?.nombre}</p>
       </div>
 
       <div className="stats-grid">
