@@ -42,8 +42,8 @@ export const authService = {
 
 // Servicios de registros INE
 export const registrosService = {
-  getAll: async (filtros?: FiltrosEstadisticas): Promise<RegistroINE[]> => {
-    const { data } = await apiClient.get<RegistroINE[]>('/registros', { params: filtros });
+  getAll: async (filtros?: FiltrosEstadisticas): Promise<{ page: number; total: number; totalPages: number; data: RegistroINE[] }> => {
+    const { data } = await apiClient.get<{ page: number; total: number; totalPages: number; data: RegistroINE[] }>('/registros', { params: filtros });
     return data;
   },
   

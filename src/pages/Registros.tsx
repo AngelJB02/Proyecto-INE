@@ -2,23 +2,31 @@ import { useState, useEffect } from 'react';
 import type { RegistroINE } from '../types';
 import { format } from 'date-fns';
 import '../styles/Registros.css';
+import { registrosService } from '../services/api';
 
 export const Registros = () => {
   const [registros, setRegistros] = useState<RegistroINE[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
+  const [currentPage, setCurrentPage] = useState(1); // Estado para la página actual
+  const [totalPages, setTotalPages] = useState(1); // Estado para el total de páginas
 
   useEffect(() => {
     cargarRegistros();
-  }, []);
+  }, [currentPage]); // Agregar currentPage como dependencia
 
   const cargarRegistros = async () => {
-    // TODO: Implementar llamada a API real
     setIsLoading(true);
-    setTimeout(() => {
-      setRegistros([]); // Sin datos por ahora
+    try {
+      const response = await registrosService.getAll({ page: currentPage });
+      setRegistros(response.data); // Usar la propiedad `data` de la respuesta
+      setTotalPages(response.totalPages); // Actualizar el total de páginas
+    } catch (error) {
+      console.error('Error cargando registros:', error);
+      setRegistros([]);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const registrosFiltrados = registros.filter(registro =>
@@ -27,6 +35,12 @@ export const Registros = () => {
     registro.ClaveDeElector?.toLowerCase().includes(busqueda.toLowerCase()) ||
     registro.from_number.includes(busqueda)
   );
+
+  const cambiarPagina = (pagina: number) => {
+    if (pagina >= 1 && pagina <= totalPages) {
+      setCurrentPage(pagina);
+    }
+  };
 
   return (
     <div className="registros-page">
@@ -48,6 +62,22 @@ export const Registros = () => {
         <>
           <div className="registros-count">
             Mostrando {registrosFiltrados.length} de {registros.length} registros
+          </div>
+
+          <div className="pagination">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => cambiarPagina(currentPage - 1)}
+            >
+              Anterior
+            </button>
+            <span>Página {currentPage} de {totalPages}</span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => cambiarPagina(currentPage + 1)}
+            >
+              Siguiente
+            </button>
           </div>
           
           <div className="tabla-container">
@@ -85,6 +115,22 @@ export const Registros = () => {
             {registrosFiltrados.length === 0 && (
               <p className="no-data">No se encontraron registros</p>
             )}
+          </div>
+
+          <div className="pagination">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => cambiarPagina(currentPage - 1)}
+            >
+              Anterior
+            </button>
+            <span>Página {currentPage} de {totalPages}</span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => cambiarPagina(currentPage + 1)}
+            >
+              Siguiente
+            </button>
           </div>
         </>
       )}

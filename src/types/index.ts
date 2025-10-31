@@ -59,6 +59,7 @@ export interface FiltrosEstadisticas {
   estado?: string;
   seccion?: string;
   userId?: number;
+  page?: number; // Página actual para paginación
 }
 
 export interface LoginCredentials {

@@ -43,10 +43,13 @@ router.get('/general', async (req: Request, res: Response) => {
 
     // Registros por número de WhatsApp
     const [numeroRows] = await pool.execute(`
-      SELECT from_number as numero, COUNT(*) as cantidad 
-      FROM ine_registros 
+      SELECT 
+        COALESCE(un.nombre_contacto, ir.from_number) as numero, 
+        COUNT(*) as cantidad 
+      FROM ine_registros ir
+      LEFT JOIN usuarios_numeros un ON un.numero_whatsapp = ir.from_number
       ${whereClause} 
-      GROUP BY from_number 
+      GROUP BY ir.from_number, un.nombre_contacto 
       ORDER BY cantidad DESC
     `, params);
     const registros_por_numero = numeroRows as { numero: string; cantidad: number }[];
