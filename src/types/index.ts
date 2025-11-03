@@ -72,3 +72,45 @@ export interface AuthResponse {
   token: string;
   usuario: Usuario;
 }
+
+export interface RegistroGeo {
+  id: number;
+  Nombre: string;
+  Domicilio: string;
+  Seccion: string;
+  fecha_registro: Date;
+  codigo_postal: string;
+  estado: string;
+  municipio: string;
+  colonia: string;
+  d_zona: string;
+}
+
+export interface EstadoStats {
+  estado: string;
+  cantidad: number;
+  codigo_estado: string;
+}
+
+export interface MunicipioStats {
+  estado: string;
+  municipio: string;
+  cantidad: number;
+  codigo_municipio: string;
+}
+
+export interface SeccionStats {
+  seccion: string;
+  cantidad: number;
+  estado: string;
+  municipio: string;
+}
+
+export interface StateMapConfig {
+  [key: string]: {
+    center: [number, number];
+    zoom: number;
+    name: string;
+  };
+}
+

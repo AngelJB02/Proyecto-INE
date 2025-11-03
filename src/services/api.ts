@@ -9,7 +9,7 @@ import type {
 } from '../types';
 
 // Configuración base de Axios
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -96,6 +96,39 @@ export const codigosPostalesService = {
   
   getMunicipios: async (estado: string): Promise<string[]> => {
     const { data } = await apiClient.get<string[]>(`/codigos-postales/municipios/${estado}`);
+    return data;
+  },
+};
+
+// Servicios de mapa
+export const mapaService = {
+  getRegistrosGeoreferenciados: async (filtros?: { estado?: string; municipio?: string; seccion?: string; limit?: number }): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/registros-georeferenciados', { params: filtros });
+    return data;
+  },
+  
+  getRegistrosPorEstado: async (): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/registros-por-estado');
+    return data;
+  },
+  
+  getRegistrosPorMunicipio: async (estado?: string): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/registros-por-municipio', { params: { estado } });
+    return data;
+  },
+  
+  getRegistrosPorSeccion: async (filtros?: { estado?: string; municipio?: string }): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/registros-por-seccion', { params: filtros });
+    return data;
+  },
+  
+  getEstados: async (): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/estados');
+    return data;
+  },
+  
+  getMunicipios: async (estado: string): Promise<any> => {
+    const { data } = await apiClient.get(`/mapa/municipios/${estado}`);
     return data;
   },
 };

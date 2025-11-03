@@ -24,11 +24,13 @@ router.get('/general', async (req: Request, res: Response) => {
     const totalRegistros = (totalRows as any)[0].total;
 
     // Registros de hoy
-    const [hoyRows] = await pool.execute(`SELECT COUNT(*) as hoy FROM ine_registros ${whereClause} AND DATE(fecha_registro) = CURDATE()`, params);
+    const hoyClause = whereClause ? `${whereClause} AND DATE(fecha_registro) = CURDATE()` : 'WHERE DATE(fecha_registro) = CURDATE()';
+    const [hoyRows] = await pool.execute(`SELECT COUNT(*) as hoy FROM ine_registros ${hoyClause}`, params);
     const registrosHoy = (hoyRows as any)[0].hoy;
 
     // Registros de este mes
-    const [mesRows] = await pool.execute(`SELECT COUNT(*) as mes FROM ine_registros ${whereClause} AND MONTH(fecha_registro) = MONTH(CURDATE()) AND YEAR(fecha_registro) = YEAR(CURDATE())`, params);
+    const mesClause = whereClause ? `${whereClause} AND MONTH(fecha_registro) = MONTH(CURDATE()) AND YEAR(fecha_registro) = YEAR(CURDATE())` : 'WHERE MONTH(fecha_registro) = MONTH(CURDATE()) AND YEAR(fecha_registro) = YEAR(CURDATE())';
+    const [mesRows] = await pool.execute(`SELECT COUNT(*) as mes FROM ine_registros ${mesClause}`, params);
     const registrosMes = (mesRows as any)[0].mes;
 
     // Números activos - para el usuario específico o todos
