@@ -7,6 +7,19 @@
 .estadisticas-page h1 {
   font-size: 2rem;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+}
+
+.estadisticas-page h1 svg,
+.estadisticas-page h2 svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.estadisticas-page h2 {
+  display: flex;
+  align-items: center;
 }
 
 .filtros-container {
@@ -198,6 +211,13 @@
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.empleado-details span svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .registros-recientes {

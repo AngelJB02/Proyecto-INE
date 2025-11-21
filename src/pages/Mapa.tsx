@@ -6,6 +6,7 @@ import {
   agruparRegistrosPorMunicipio,
   type MunicipioConRegistros 
 } from '../utils/municipioMatcher';
+import { FiBarChart2, FiMapPin, FiHome, FiInfo, FiMap } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
 import '../styles/Mapa.css';
 import L from 'leaflet';
@@ -516,7 +517,7 @@ export const Mapa = () => {
         {mostrarMunicipios ? (
           <>
             <div className="info-card primary">
-              <div className="card-icon">📊</div>
+              <div className="card-icon"><FiBarChart2 /></div>
               <div className="card-content">
                 <div className="card-value">{totalRegistros}</div>
                 <div className="card-label">Total de Registros</div>
@@ -524,7 +525,7 @@ export const Mapa = () => {
             </div>
 
             <div className="info-card success">
-              <div className="card-icon">📍</div>
+              <div className="card-icon"><FiMapPin /></div>
               <div className="card-content">
                 <div className="card-value">{estadoSeleccionado}</div>
                 <div className="card-label">Estado Seleccionado</div>
@@ -532,7 +533,7 @@ export const Mapa = () => {
             </div>
 
             <div className="info-card info">
-              <div className="card-icon">🏘️</div>
+              <div className="card-icon"><FiHome /></div>
               <div className="card-content">
                 <div className="card-value">{municipiosDelEstado.filter(m => m.cantidad > 0).length}</div>
                 <div className="card-label">Municipios con Registros</div>
@@ -540,7 +541,7 @@ export const Mapa = () => {
             </div>
 
             <div className="info-card tip">
-              <div className="card-icon">💡</div>
+              <div className="card-icon"><FiInfo /></div>
               <div className="card-content">
                 <div className="card-tip">Haz clic en otro estado para ver sus municipios</div>
               </div>
@@ -549,7 +550,7 @@ export const Mapa = () => {
         ) : (
           <>
             <div className="info-card primary">
-              <div className="card-icon">📊</div>
+              <div className="card-icon"><FiBarChart2 /></div>
               <div className="card-content">
                 <div className="card-value">{totalRegistros}</div>
                 <div className="card-label">Total de Registros</div>
@@ -557,7 +558,7 @@ export const Mapa = () => {
             </div>
 
             <div className="info-card success">
-              <div className="card-icon">🏛️</div>
+              <div className="card-icon"><FiMap /></div>
               <div className="card-content">
                 <div className="card-value">{estadosData.filter(e => e.cantidad > 0).length}</div>
                 <div className="card-label">Estados con Registros</div>
@@ -565,7 +566,7 @@ export const Mapa = () => {
             </div>
 
             <div className="info-card info">
-              <div className="card-icon">🏘️</div>
+              <div className="card-icon"><FiHome /></div>
               <div className="card-content">
                 <div className="card-value">{Array.from(estadosDetectados.values()).reduce((sum, estado) => sum + estado.municipios.size, 0)}</div>
                 <div className="card-label">Total de Municipios</div>
@@ -573,7 +574,7 @@ export const Mapa = () => {
             </div>
 
             <div className="info-card tip">
-              <div className="card-icon">💡</div>
+              <div className="card-icon"><FiInfo /></div>
               <div className="card-content">
                 <div className="card-tip">Haz clic en un estado para ver sus municipios</div>
               </div>

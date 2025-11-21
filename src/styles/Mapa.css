@@ -559,6 +559,13 @@
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   transition: var(--transition);
+  color: inherit;
+}
+
+.card-icon svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  stroke-width: 1.5;
 }
 
 .info-card:hover .card-icon {

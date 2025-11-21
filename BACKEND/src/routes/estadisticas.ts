@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { pool } from '../database';
+import { pool, executeWithRetry } from '../database';
 
 const router = Router();
 
@@ -20,17 +20,26 @@ router.get('/general', async (req: Request, res: Response) => {
     }
 
     // Total de registros
-    const [totalRows] = await pool.execute(`SELECT COUNT(*) as total FROM ine_registros ${whereClause}`, params);
+    const [totalRows] = await executeWithRetry(
+      `SELECT COUNT(*) as total FROM ine_registros ${whereClause}`,
+      params
+    );
     const totalRegistros = (totalRows as any)[0].total;
 
     // Registros de hoy
     const hoyClause = whereClause ? `${whereClause} AND DATE(fecha_registro) = CURDATE()` : 'WHERE DATE(fecha_registro) = CURDATE()';
-    const [hoyRows] = await pool.execute(`SELECT COUNT(*) as hoy FROM ine_registros ${hoyClause}`, params);
+    const [hoyRows] = await executeWithRetry(
+      `SELECT COUNT(*) as hoy FROM ine_registros ${hoyClause}`,
+      params
+    );
     const registrosHoy = (hoyRows as any)[0].hoy;
 
     // Registros de este mes
     const mesClause = whereClause ? `${whereClause} AND MONTH(fecha_registro) = MONTH(CURDATE()) AND YEAR(fecha_registro) = YEAR(CURDATE())` : 'WHERE MONTH(fecha_registro) = MONTH(CURDATE()) AND YEAR(fecha_registro) = YEAR(CURDATE())';
-    const [mesRows] = await pool.execute(`SELECT COUNT(*) as mes FROM ine_registros ${mesClause}`, params);
+    const [mesRows] = await executeWithRetry(
+      `SELECT COUNT(*) as mes FROM ine_registros ${mesClause}`,
+      params
+    );
     const registrosMes = (mesRows as any)[0].mes;
 
     // Números activos - para el usuario específico o todos
@@ -40,11 +49,11 @@ router.get('/general', async (req: Request, res: Response) => {
       numerosQuery += ' AND usuario_id = ?';
       numerosParams = [userId];
     }
-    const [activosRows] = await pool.execute(numerosQuery, numerosParams);
+    const [activosRows] = await executeWithRetry(numerosQuery, numerosParams);
     const numerosActivos = (activosRows as any)[0].activos;
 
     // Registros por número de WhatsApp
-    const [numeroRows] = await pool.execute(`
+    const [numeroRows] = await executeWithRetry(`
       SELECT 
         COALESCE(un.nombre_contacto, ir.from_number) as numero, 
         COUNT(*) as cantidad 
@@ -57,7 +66,7 @@ router.get('/general', async (req: Request, res: Response) => {
     const registros_por_numero = numeroRows as { numero: string; cantidad: number }[];
 
     // Registros por estado (extrayendo CP del Domicilio)
-    const [estadoRows] = await pool.execute(`
+    const [estadoRows] = await executeWithRetry(`
       SELECT cp.d_estado as estado, COUNT(DISTINCT ir.id) as cantidad
       FROM ine_registros ir
       JOIN codigos_postales cp ON cp.d_codigo = REGEXP_SUBSTR(ir.Domicilio, '[0-9]{5}')
@@ -68,7 +77,7 @@ router.get('/general', async (req: Request, res: Response) => {
     const registros_por_estado = estadoRows as { estado: string; cantidad: number }[];
 
     // Registros por sección
-    const [seccionRows] = await pool.execute(`
+    const [seccionRows] = await executeWithRetry(`
       SELECT Seccion as seccion, COUNT(*) as cantidad 
       FROM ine_registros 
       ${whereClause} 
@@ -86,9 +95,13 @@ router.get('/general', async (req: Request, res: Response) => {
       registros_por_estado,
       registros_por_seccion
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error obteniendo estadísticas:', error);
-    res.status(500).json({ ok: false, msg: 'Error interno del servidor' });
+    res.status(500).json({ 
+      ok: false, 
+      msg: 'Error interno del servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

@@ -4,6 +4,7 @@ import { estadisticasService } from '../services/api';
 import { StatsCard } from '.././components/StatsCard';
 import { BarChart } from '.././components/BarChart';
 import type { EstadisticasGeneral } from '../types';
+import { FiClipboard, FiCalendar, FiBarChart2, FiSmartphone } from 'react-icons/fi';
 import '../styles/Dashboard.css';
 
 export const Dashboard = () => {
@@ -56,25 +57,25 @@ export const Dashboard = () => {
         <StatsCard
           title="Total de Registros"
           value={estadisticas?.totalRegistros || 0}
-          icon="📋"
+          icon={<FiClipboard />}
           color="blue"
         />
         <StatsCard
           title="Registros Hoy"
           value={estadisticas?.registrosHoy || 0}
-          icon="📅"
+          icon={<FiCalendar />}
           color="green"
         />
         <StatsCard
           title="Registros Este Mes"
           value={estadisticas?.registrosMes || 0}
-          icon="📊"
+          icon={<FiBarChart2 />}
           color="orange"
         />
         <StatsCard
           title="Números Activos"
           value={estadisticas?.numerosActivos || 0}
-          icon="📱"
+          icon={<FiSmartphone />}
           color="purple"
         />
       </div>

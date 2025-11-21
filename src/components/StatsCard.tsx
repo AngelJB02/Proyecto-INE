@@ -1,9 +1,10 @@
+import { type ReactNode } from 'react';
 import '../styles/StatsCard.css';
 
 interface StatsCardProps {
   title: string;
   value: number;
-  icon: string;
+  icon: ReactNode;
   color: 'blue' | 'green' | 'orange' | 'purple';
 }
 

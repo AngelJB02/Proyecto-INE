@@ -4,6 +4,7 @@ import { estadisticasService, registrosService } from '../services/api';
 import { StatsCard } from '../components/StatsCard';
 import { BarChart } from '../components/BarChart';
 import { format } from 'date-fns';
+import { FiBarChart2, FiUser, FiMail, FiSmartphone, FiCalendar, FiArrowUp, FiStar, FiMapPin, FiFileText } from 'react-icons/fi';
 import '../styles/Estadisticas.css';
 
 export const Estadisticas = () => {
@@ -137,7 +138,10 @@ export const Estadisticas = () => {
 
   return (
     <div className="estadisticas-page">
-      <h1>📊 Estadísticas por Empleado</h1>
+      <h1>
+        <FiBarChart2 style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+        Estadísticas por Empleado
+      </h1>
       
       {/* Selector de empleado */}
       <div className="empleado-selector">
@@ -159,7 +163,10 @@ export const Estadisticas = () => {
 
       {!empleadoSeleccionado ? (
         <div className="empty-state">
-          <p>👤 Selecciona un empleado para ver sus estadísticas detalladas</p>
+          <p>
+            <FiUser style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+            Selecciona un empleado para ver sus estadísticas detalladas
+          </p>
         </div>
       ) : isLoading ? (
         <div className="loading">Cargando estadísticas del empleado...</div>
@@ -167,10 +174,19 @@ export const Estadisticas = () => {
         <>
           {/* Información del empleado */}
           <div className="empleado-info">
-            <h2>👤 {empleadoActual?.nombre} {empleadoActual?.apellido}</h2>
+            <h2>
+              <FiUser style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+              {empleadoActual?.nombre} {empleadoActual?.apellido}
+            </h2>
             <p className="empleado-details">
-              <span>📧 {empleadoActual?.email}</span>
-              <span>📱 {empleadoActual?.nombres_asignados.join(', ')}</span>
+              <span>
+                <FiMail style={{ display: 'inline-block', marginRight: '0.25rem', verticalAlign: 'middle' }} />
+                {empleadoActual?.email}
+              </span>
+              <span>
+                <FiSmartphone style={{ display: 'inline-block', marginRight: '0.25rem', verticalAlign: 'middle' }} />
+                {empleadoActual?.nombres_asignados.join(', ')}
+              </span>
             </p>
           </div>
           
@@ -199,25 +215,25 @@ export const Estadisticas = () => {
                 <StatsCard 
                   title="Total Registros" 
                   value={estadisticas.totalRegistros} 
-                  icon="📊" 
+                  icon={<FiBarChart2 />} 
                   color="blue" 
                 />
                 <StatsCard 
                   title="Registros Hoy" 
                   value={estadisticas.registrosHoy} 
-                  icon="📅" 
+                  icon={<FiCalendar />} 
                   color="green" 
                 />
                 <StatsCard 
                   title="Este Mes" 
                   value={estadisticas.registrosMes} 
-                  icon="📈" 
+                  icon={<FiArrowUp />} 
                   color="orange" 
                 />
                 <StatsCard 
                   title="Promedio Diario" 
                   value={Math.round(estadisticas.registrosMes / 30)} 
-                  icon="⭐" 
+                  icon={<FiStar />} 
                   color="purple" 
                 />
               </div>
@@ -225,7 +241,10 @@ export const Estadisticas = () => {
               {/* Gráficos del empleado */}
               <div className="charts-container">
                 <div className="chart-section">
-                  <h2>📍 Distribución por Estado</h2>
+                  <h2>
+                    <FiMapPin style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                    Distribución por Estado
+                  </h2>
                   <BarChart 
                     data={estadisticas.registros_por_estado} 
                     dataKey="cantidad" 
@@ -235,7 +254,10 @@ export const Estadisticas = () => {
                 </div>
 
                 <div className="chart-section">
-                  <h2>🗳️ Registros por Sección</h2>
+                  <h2>
+                    <FiFileText style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                    Registros por Sección
+                  </h2>
                   <BarChart 
                     data={estadisticas.registros_por_seccion.slice(0, 8)} 
                     dataKey="cantidad" 
@@ -247,7 +269,10 @@ export const Estadisticas = () => {
 
               {/* Registros recientes */}
               <div className="registros-recientes">
-                <h2>📝 Registros Recientes</h2>
+                <h2>
+                  <FiFileText style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                  Registros Recientes
+                </h2>
                 <div className="tabla-container">
                   <table className="tabla-registros">
                     <thead>
