@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Estadisticas } from './pages/Estadisticas';
 import { Mapa } from './pages/Mapa';
 import { Registros } from './pages/Registros';
+import { Admin } from './pages/Admin';
 import './styles/App.css';
 
 function App() {
@@ -55,6 +56,17 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <Registros />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <Layout>
+                  <Admin />
                 </Layout>
               </ProtectedRoute>
             }

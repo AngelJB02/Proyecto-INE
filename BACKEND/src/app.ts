@@ -5,6 +5,7 @@ import authRouter from './routes/auth';
 import registrosRouter from './routes/registros';
 import estadisticasRouter from './routes/estadisticas';
 import mapaRouter from './routes/mapa';
+import adminRouter from './routes/admin';
 
 const app = express();
 
@@ -20,5 +21,6 @@ app.use('/api/auth', authRouter);
 app.use('/api/registros', registrosRouter);
 app.use('/api/estadisticas', estadisticasRouter);
 app.use('/api/mapa', mapaRouter);
+app.use('/api/admin', adminRouter);
 
 export default app;

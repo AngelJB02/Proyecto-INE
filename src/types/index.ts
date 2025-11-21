@@ -114,3 +114,31 @@ export interface StateMapConfig {
   };
 }
 
+export interface UsuarioCompleto extends Usuario {
+  activo: boolean;
+  fecha_creacion: string;
+  ultima_sesion?: string;
+}
+
+export interface NumeroAsignado {
+  id: number;
+  numero_whatsapp: string;
+  nombre_contacto?: string;
+  activo: boolean;
+  fecha_asignacion: string;
+}
+
+export interface CrearUsuarioData {
+  username: string;
+  email: string;
+  password: string;
+  nombre?: string;
+  apellido?: string;
+  rol?: 'admin' | 'usuario';
+}
+
+export interface AsignarNumeroData {
+  numero_whatsapp: string;
+  nombre_contacto?: string;
+}
+

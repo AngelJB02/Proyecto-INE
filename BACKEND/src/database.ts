@@ -41,25 +41,54 @@ pool.on('connection', (connection) => {
   });
 });
 
+// Variable para evitar múltiples recreaciones simultáneas
+let isReconnecting = false;
+
 // Función para verificar y reconectar si es necesario
 async function ensureConnection() {
+  // Evitar múltiples intentos simultáneos
+  if (isReconnecting) {
+    return;
+  }
+
   try {
     const connection = await pool.getConnection();
     await connection.ping();
     connection.release();
   } catch (error: any) {
-    console.error('⚠️ Error verificando conexión, recreando pool...', error);
-    try {
-      await pool.end();
-    } catch (e) {
-      // Ignorar errores al cerrar
+    // Solo loguear si no es un error de conexión esperado
+    if (error.code !== 'ECONNRESET' && error.code !== 'PROTOCOL_CONNECTION_LOST') {
+      console.error('⚠️ Error verificando conexión:', error.code || error.message);
     }
-    pool = createPoolConnection();
+    
+    // Recrear el pool solo si no estamos ya en proceso de reconexión
+    if (!isReconnecting) {
+      isReconnecting = true;
+      try {
+        // Intentar cerrar el pool anterior de forma segura
+        try {
+          await pool.end();
+        } catch (e) {
+          // Ignorar errores al cerrar, el pool puede estar ya cerrado
+        }
+        
+        // Esperar un momento antes de recrear
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Recrear el pool
+        pool = createPoolConnection();
+        console.log('✅ Pool de conexiones recreado exitosamente');
+      } catch (reconnectError) {
+        console.error('❌ Error recreando pool:', reconnectError);
+      } finally {
+        isReconnecting = false;
+      }
+    }
   }
 }
 
-// Verificar conexión periódicamente
-setInterval(ensureConnection, 30000); // Cada 30 segundos
+// Verificar conexión periódicamente (cada 60 segundos para no ser tan agresivo)
+setInterval(ensureConnection, 60000); // Cada 60 segundos
 
 export { pool };
 

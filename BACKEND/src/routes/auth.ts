@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { pool } from '../database';
+import { pool, executeWithRetry } from '../database';
 
 const router = Router();
 
@@ -11,7 +11,7 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 
   try {
-    const [rows] = await pool.execute(
+    const [rows] = await executeWithRetry(
       'SELECT id, username, nombre, apellido, rol, activo FROM usuarios WHERE username = ? AND password = ? AND activo = TRUE',
       [username, password]
     );
@@ -23,8 +23,15 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const user = users[0];
 
+    // Obtener números asignados
+    const [numerosRows] = await executeWithRetry(
+      'SELECT numero_whatsapp FROM usuarios_numeros WHERE usuario_id = ? AND activo = TRUE',
+      [user.id]
+    );
+    const numeros = (numerosRows as any[]).map((n: any) => n.numero_whatsapp);
+
     // Actualizar última sesión
-    await pool.execute(
+    await executeWithRetry(
       'UPDATE usuarios SET ultima_sesion = NOW() WHERE id = ?',
       [user.id]
     );
@@ -36,9 +43,11 @@ router.post('/login', async (req: Request, res: Response) => {
       usuario: {
         id: user.id,
         username: user.username,
+        email: user.email || '', // Email opcional, usar string vacío si no existe
         nombre: user.nombre,
         apellido: user.apellido,
-        rol: user.rol
+        rol: user.rol,
+        nombres_asignados: numeros
       },
       token
     });

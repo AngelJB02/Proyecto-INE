@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiBarChart2, FiUser, FiLogOut } from 'react-icons/fi';
+import { FiBarChart2, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
 import '../styles/Layout.css';
 import type { ReactNode } from 'react';
 
@@ -51,6 +51,14 @@ export const Layout = ({ children }: LayoutProps) => {
               Registros
             </Link>
           </li>
+          {usuario?.rol === 'admin' && (
+            <li>
+              <Link to="/admin" className={isActive('/admin') ? 'active' : ''}>
+                <FiSettings style={{ display: 'inline-block', marginRight: '0.25rem', verticalAlign: 'middle' }} />
+                Administración
+              </Link>
+            </li>
+          )}
         </ul>
 
         <div className="navbar-user">

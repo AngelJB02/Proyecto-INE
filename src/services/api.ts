@@ -6,6 +6,10 @@ import type {
   EstadisticasGeneral,
   FiltrosEstadisticas,
   CodigoPostal,
+  UsuarioCompleto,
+  NumeroAsignado,
+  CrearUsuarioData,
+  AsignarNumeroData,
 } from '../types';
 
 // Configuración base de Axios
@@ -130,6 +134,62 @@ export const mapaService = {
   getMunicipios: async (estado: string): Promise<any> => {
     const { data } = await apiClient.get(`/mapa/municipios/${estado}`);
     return data;
+  },
+};
+
+// Servicios de administración
+export const adminService = {
+  // Obtener todos los usuarios
+  getUsuarios: async (): Promise<UsuarioCompleto[]> => {
+    const { data } = await apiClient.get<{ ok: boolean; data: UsuarioCompleto[] }>('/admin/usuarios');
+    return data.data;
+  },
+
+  // Crear nuevo usuario
+  crearUsuario: async (userData: CrearUsuarioData): Promise<UsuarioCompleto> => {
+    const { data } = await apiClient.post<{ ok: boolean; data: UsuarioCompleto }>('/admin/usuarios', userData);
+    return data.data;
+  },
+
+  // Actualizar usuario
+  actualizarUsuario: async (userId: number, updates: Partial<UsuarioCompleto>): Promise<void> => {
+    await apiClient.put(`/admin/usuarios/${userId}`, updates);
+  },
+
+  // Obtener estadísticas de un usuario
+  getEstadisticasUsuario: async (userId: number, filtros?: FiltrosEstadisticas): Promise<EstadisticasGeneral> => {
+    const { data } = await apiClient.get<{ ok: boolean; data: EstadisticasGeneral }>(
+      `/admin/usuarios/${userId}/estadisticas`,
+      { params: filtros }
+    );
+    return data.data;
+  },
+
+  // Obtener registros de un usuario
+  getRegistrosUsuario: async (userId: number, limit?: number): Promise<RegistroINE[]> => {
+    const { data } = await apiClient.get<{ ok: boolean; data: RegistroINE[] }>(
+      `/admin/usuarios/${userId}/registros`,
+      { params: { limit } }
+    );
+    return data.data;
+  },
+
+  // Obtener números asignados a un usuario
+  getNumerosUsuario: async (userId: number): Promise<NumeroAsignado[]> => {
+    const { data } = await apiClient.get<{ ok: boolean; data: NumeroAsignado[] }>(
+      `/admin/usuarios/${userId}/numeros`
+    );
+    return data.data;
+  },
+
+  // Asignar número a un usuario
+  asignarNumero: async (userId: number, numeroData: AsignarNumeroData): Promise<void> => {
+    await apiClient.post(`/admin/usuarios/${userId}/numeros`, numeroData);
+  },
+
+  // Eliminar número de un usuario
+  eliminarNumero: async (userId: number, numeroId: number): Promise<void> => {
+    await apiClient.delete(`/admin/usuarios/${userId}/numeros/${numeroId}`);
   },
 };
 
