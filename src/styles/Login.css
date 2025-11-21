@@ -430,9 +430,9 @@
   justify-content: center;
 }
 
-.form-group input {
+.login-form .form-group input {
   width: 100%;
-  padding: 1rem 1.125rem 1rem 3.25rem;
+  padding: 1rem 1.125rem 1rem 3.75rem;
   border: 2px solid var(--border-color);
   border-radius: 14px;
   font-size: 1rem;
@@ -444,7 +444,7 @@
   font-weight: 500;
 }
 
-.form-group input:focus {
+.login-form .form-group input:focus {
   outline: none;
   border-color: #667eea;
   background: white;
@@ -454,18 +454,18 @@
   transform: translateY(-2px);
 }
 
-.form-group input:focus ~ .input-icon {
+.login-form .form-group input:focus ~ .input-icon {
   color: #667eea;
   transform: translateY(calc(-50% - 2px)) scale(1.05);
 }
 
-.form-group input:disabled {
+.login-form .form-group input:disabled {
   background-color: rgba(243, 244, 246, 0.8);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-.form-group input::placeholder {
+.login-form .form-group input::placeholder {
   color: #9ca3af;
   font-weight: 400;
 }

@@ -171,8 +171,8 @@ export const Login = () => {
                 <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <h1>Sistema INE</h1>
-            <p>Gestión de Registros Electorales</p>
+            <h1>Dashboard</h1>
+            <p>Plataforma de Gestión y Análisis</p>
           </div>
           
           <form onSubmit={handleSubmit} className="login-form">
