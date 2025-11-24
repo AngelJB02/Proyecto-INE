@@ -6,10 +6,14 @@ const router = Router();
 // Middleware para autenticar
 function authenticate(req: Request, res: Response, next: any) {
   const authHeader = req.headers.authorization;
+  console.log('🔐 Autenticación - Header:', authHeader);
+  
   if (!authHeader) {
     return res.status(401).json({ ok: false, msg: 'No autorizado' });
   }
   const token = authHeader.split(' ')[1]; // Bearer token
+  console.log('🔑 Token recibido:', token);
+  
   if (!token) {
     return res.status(401).json({ ok: false, msg: 'Token requerido' });
   }
@@ -21,6 +25,7 @@ function authenticate(req: Request, res: Response, next: any) {
   if (isNaN(userId)) {
     return res.status(401).json({ ok: false, msg: 'Token inválido' });
   }
+  console.log('✅ Usuario autenticado - ID:', userId);
   (req as any).userId = userId;
   next();
 }
@@ -29,14 +34,32 @@ function authenticate(req: Request, res: Response, next: any) {
 async function requireAdmin(req: Request, res: Response, next: any) {
   try {
     const userId = (req as any).userId;
+    console.log('👤 Verificando admin para usuario:', userId);
+    
     const [rows] = await executeWithRetry(
-      'SELECT rol FROM usuarios WHERE id = ? AND activo = TRUE',
+      'SELECT rol, activo FROM usuarios WHERE id = ?',
       [userId]
     );
     const users = rows as any[];
-    if (users.length === 0 || users[0].rol !== 'admin') {
+    
+    console.log('📊 Datos del usuario:', users);
+    
+    if (users.length === 0) {
+      console.log('❌ Usuario no encontrado');
+      return res.status(403).json({ ok: false, msg: 'Usuario no encontrado' });
+    }
+    
+    if (!users[0].activo) {
+      console.log('❌ Usuario inactivo');
+      return res.status(403).json({ ok: false, msg: 'Usuario inactivo' });
+    }
+    
+    if (users[0].rol !== 'admin') {
+      console.log('❌ Usuario no es admin, rol:', users[0].rol);
       return res.status(403).json({ ok: false, msg: 'Se requieren permisos de administrador' });
     }
+    
+    console.log('✅ Usuario es admin');
     next();
   } catch (error) {
     console.error('Error verificando admin:', error);
@@ -60,34 +83,30 @@ router.get('/usuarios', async (req: Request, res: Response) => {
         u.rol, 
         u.activo,
         u.fecha_creacion,
-        u.ultima_sesion,
-        GROUP_CONCAT(
-          CONCAT(un.numero_whatsapp, '|', COALESCE(un.nombre_contacto, ''))
-          SEPARATOR ';'
-        ) as numeros_asignados
+        u.ultima_sesion
       FROM usuarios u
-      LEFT JOIN usuarios_numeros un ON u.id = un.usuario_id AND un.activo = TRUE
-      GROUP BY u.id, u.username, u.nombre, u.apellido, u.rol, u.activo, u.fecha_creacion, u.ultima_sesion
       ORDER BY u.fecha_creacion DESC`,
       []
     );
 
-    // Procesar los números asignados
-    const usuariosConNumeros = (usuarios as any[]).map(usuario => {
-      const numeros: string[] = [];
-      if (usuario.numeros_asignados) {
-        const numerosArray = usuario.numeros_asignados.split(';');
-        numerosArray.forEach((num: string) => {
-          const [numero] = num.split('|');
-          if (numero) numeros.push(numero);
-        });
-      }
-      return {
-        ...usuario,
-        email: usuario.email || '', // Email opcional, usar string vacío si no existe
-        nombres_asignados: numeros
-      };
-    });
+    // Para cada usuario, obtener sus números asignados
+    const usuariosConNumeros = await Promise.all(
+      (usuarios as any[]).map(async (usuario) => {
+        const [numeros] = await executeWithRetry(
+          `SELECT id, numero_whatsapp, nombre_contacto, activo, fecha_asignacion
+           FROM usuarios_numeros 
+           WHERE usuario_id = ? AND activo = TRUE`,
+          [usuario.id]
+        );
+
+        return {
+          ...usuario,
+          email: usuario.email || '', // Email opcional, usar string vacío si no existe
+          nombres_asignados: (numeros as any[]).map(n => n.numero_whatsapp), // Mantener compatibilidad
+          numeros: numeros // Array de objetos completo
+        };
+      })
+    );
 
     res.json({ ok: true, data: usuariosConNumeros });
   } catch (error) {
@@ -284,7 +303,12 @@ router.get('/usuarios/:id/numeros', async (req: Request, res: Response) => {
     }
 
     const [numeros] = await executeWithRetry(
-      `SELECT id, numero_whatsapp, nombre_contacto, activo, fecha_asignacion 
+      `SELECT 
+        id, 
+        numero_whatsapp, 
+        nombre_contacto, 
+        activo, 
+        fecha_asignacion 
        FROM usuarios_numeros 
        WHERE usuario_id = ? 
        ORDER BY fecha_asignacion DESC`,

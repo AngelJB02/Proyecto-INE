@@ -28,24 +28,34 @@ function authenticate(req: Request, res: Response, next: any) {
 // GET /api/registros con paginación
 router.get('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const { page = 1 } = req.query; // Página actual (por defecto 1)
+    const { page = 1, from_number } = req.query; // Página actual y número específico
     const limit = 10; // Registros por página
     const offset = (Number(page) - 1) * limit; // Calcular el offset
     const userId = (req as any).userId;
+
+    // Si se especifica from_number, filtrar por ese número específico
+    let whereClause = 'WHERE ir.from_number IN (SELECT numero_whatsapp FROM usuarios_numeros WHERE usuario_id = ? AND activo = TRUE)';
+    const params: any[] = [userId];
+    
+    if (from_number) {
+      whereClause += ' AND ir.from_number = ?';
+      params.push(from_number);
+    }
 
     const [rows] = await pool.execute(
       `SELECT ir.*, COALESCE(un.nombre_contacto, ir.from_number) as nombre_contacto 
        FROM ine_registros ir 
        LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
-       WHERE ir.from_number IN (SELECT numero_whatsapp FROM usuarios_numeros WHERE usuario_id = ? AND activo = TRUE)
+       ${whereClause}
+       ORDER BY ir.fecha_registro DESC
        LIMIT ? OFFSET ?`,
-      [userId, limit, offset]
+      [...params, limit, offset]
     );
 
     const [totalRows] = await pool.execute(
-      `SELECT COUNT(*) as total FROM ine_registros 
-       WHERE from_number IN (SELECT numero_whatsapp FROM usuarios_numeros WHERE usuario_id = ? AND activo = TRUE)`,
-      [userId]
+      `SELECT COUNT(*) as total FROM ine_registros ir
+       ${whereClause}`,
+      params
     );
     const total = (totalRows as any)[0].total;
 
@@ -57,6 +67,31 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error obteniendo registros:', error);
+    res.status(500).json({ ok: false, msg: 'Error interno del servidor' });
+  }
+});
+
+// GET /api/registros/mis-numeros - Obtener números/empleados del usuario autenticado
+router.get('/mis-numeros', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+
+    const [numeros] = await pool.execute(
+      `SELECT 
+        id, 
+        numero_whatsapp, 
+        nombre_contacto, 
+        activo, 
+        fecha_asignacion 
+       FROM usuarios_numeros 
+       WHERE usuario_id = ? AND activo = TRUE
+       ORDER BY fecha_asignacion DESC`,
+      [userId]
+    );
+
+    res.json({ ok: true, data: numeros });
+  } catch (error) {
+    console.error('Error obteniendo números del usuario:', error);
     res.status(500).json({ ok: false, msg: 'Error interno del servidor' });
   }
 });

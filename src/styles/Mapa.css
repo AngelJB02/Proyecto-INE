@@ -503,7 +503,7 @@
 /* Info Cards Grid */
 .mapa-info-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -512,15 +512,16 @@
 .info-card {
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
-  padding: 1.75rem 1.5rem;
+  padding: 2rem 1.75rem;
   box-shadow: var(--shadow-md);
   transition: var(--transition);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   align-items: center;
   gap: 1.25rem;
   border-left: 4px solid transparent;
+  min-height: 120px;
 }
 
 .info-card::before {
@@ -582,19 +583,19 @@
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.2;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-wrap: break-word;
 }
 
 .card-label {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 
 .card-tip {

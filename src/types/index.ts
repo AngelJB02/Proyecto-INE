@@ -118,6 +118,7 @@ export interface UsuarioCompleto extends Usuario {
   activo: boolean;
   fecha_creacion: string;
   ultima_sesion?: string;
+  numeros?: NumeroAsignado[];
 }
 
 export interface NumeroAsignado {

@@ -85,10 +85,10 @@
     transform: translateY(0) translateX(0) scale(1);
   }
   33% {
-    transform: translateY(-40px) translateX(30px) scale(1.1);
+    transform: translateY(-15px) translateX(10px) scale(1.03);
   }
   66% {
-    transform: translateY(20px) translateX(-20px) scale(0.95);
+    transform: translateY(8px) translateX(-8px) scale(0.98);
   }
 }
 
@@ -97,10 +97,10 @@
     transform: translateY(0) translateX(0) scale(1);
   }
   33% {
-    transform: translateY(30px) translateX(-40px) scale(1.05);
+    transform: translateY(12px) translateX(-15px) scale(1.02);
   }
   66% {
-    transform: translateY(-30px) translateX(25px) scale(0.98);
+    transform: translateY(-12px) translateX(10px) scale(0.99);
   }
 }
 
@@ -109,7 +109,7 @@
     transform: translateY(0) translateX(0) scale(1);
   }
   50% {
-    transform: translateY(-25px) translateX(15px) scale(1.08);
+    transform: translateY(-10px) translateX(8px) scale(1.03);
   }
 }
 
@@ -118,7 +118,7 @@
     transform: translateY(0) translateX(0) scale(1);
   }
   50% {
-    transform: translateY(35px) translateX(-25px) scale(1.12);
+    transform: translateY(15px) translateX(-12px) scale(1.04);
   }
 }
 
@@ -163,10 +163,10 @@
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(50px, -50px) scale(1.1);
+    transform: translate(20px, -20px) scale(1.03);
   }
   66% {
-    transform: translate(-30px, 40px) scale(0.9);
+    transform: translate(-15px, 18px) scale(0.97);
   }
 }
 
@@ -181,11 +181,12 @@
 .shape {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   animation: float 25s infinite ease-in-out;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  opacity: 0.12;
 }
 
 .shape-1 {
@@ -231,19 +232,19 @@
 @keyframes float {
   0%, 100% {
     transform: translateY(0) translateX(0) rotate(0deg) scale(1);
-    opacity: 0.15;
+    opacity: 0.12;
   }
   25% {
-    transform: translateY(-50px) translateX(40px) rotate(90deg) scale(1.1);
-    opacity: 0.2;
+    transform: translateY(-35px) translateX(30px) rotate(90deg) scale(1.05);
+    opacity: 0.18;
   }
   50% {
-    transform: translateY(-30px) translateX(-50px) rotate(180deg) scale(0.95);
-    opacity: 0.15;
+    transform: translateY(-25px) translateX(-35px) rotate(180deg) scale(0.95);
+    opacity: 0.12;
   }
   75% {
-    transform: translateY(60px) translateX(30px) rotate(270deg) scale(1.05);
-    opacity: 0.2;
+    transform: translateY(40px) translateX(25px) rotate(270deg) scale(1.03);
+    opacity: 0.18;
   }
 }
 

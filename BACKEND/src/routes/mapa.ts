@@ -4,6 +4,28 @@ import { RowDataPacket } from 'mysql2';
 
 const router = Router();
 
+// Middleware para autenticar
+function authenticate(req: Request, res: Response, next: any) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ ok: false, msg: 'No autorizado' });
+  }
+  const token = authHeader.split(' ')[1]; // Bearer token
+  if (!token) {
+    return res.status(401).json({ ok: false, msg: 'Token requerido' });
+  }
+  const parts = token.split('-');
+  if (parts[0] !== 'token') {
+    return res.status(401).json({ ok: false, msg: 'Token inválido' });
+  }
+  const userId = parseInt(parts[1]);
+  if (isNaN(userId)) {
+    return res.status(401).json({ ok: false, msg: 'Token inválido' });
+  }
+  (req as any).userId = userId;
+  next();
+}
+
 // Interfaz para registro con información geográfica
 interface RegistroGeo extends RowDataPacket {
   id: number;
@@ -152,12 +174,14 @@ router.get('/debug-codigos-postales', async (req: Request, res: Response) => {
 /**
  * Endpoint: GET /api/mapa/registros-georeferenciados
  * Obtiene registros con información geográfica completa
+ * Filtra por los números asignados al usuario autenticado
  */
-router.get('/registros-georeferenciados', async (req: Request, res: Response) => {
+router.get('/registros-georeferenciados', authenticate, async (req: Request, res: Response) => {
   try {
     const { estado, municipio, seccion, limit = 1000 } = req.query;
+    const userId = (req as any).userId;
 
-    // Primero obtener los registros
+    // Primero obtener los registros del usuario
     let query = `
       SELECT 
         r.id,
@@ -167,9 +191,14 @@ router.get('/registros-georeferenciados', async (req: Request, res: Response) =>
         r.fecha_registro
       FROM ine_registros r
       WHERE r.Domicilio IS NOT NULL
+        AND r.from_number IN (
+          SELECT numero_whatsapp 
+          FROM usuarios_numeros 
+          WHERE usuario_id = ? AND activo = TRUE
+        )
     `;
 
-    const params: any[] = [];
+    const params: any[] = [userId];
 
     if (seccion) {
       query += ` AND r.Seccion = ?`;
@@ -239,12 +268,22 @@ router.get('/registros-georeferenciados', async (req: Request, res: Response) =>
 /**
  * Endpoint: GET /api/mapa/registros-por-estado
  * Agrupa registros por estado
+ * Filtra por los números asignados al usuario autenticado
  */
-router.get('/registros-por-estado', async (req: Request, res: Response) => {
+router.get('/registros-por-estado', authenticate, async (req: Request, res: Response) => {
   try {
-    // Obtener todos los registros con domicilio
+    const userId = (req as any).userId;
+
+    // Obtener todos los registros del usuario con domicilio
     const [registros] = await pool.query<RowDataPacket[]>(
-      `SELECT id, Domicilio FROM ine_registros WHERE Domicilio IS NOT NULL`
+      `SELECT id, Domicilio FROM ine_registros 
+       WHERE Domicilio IS NOT NULL
+         AND from_number IN (
+           SELECT numero_whatsapp 
+           FROM usuarios_numeros 
+           WHERE usuario_id = ? AND activo = TRUE
+         )`,
+      [userId]
     );
 
     // Agrupar por estado
@@ -298,14 +337,23 @@ router.get('/registros-por-estado', async (req: Request, res: Response) => {
 /**
  * Endpoint: GET /api/mapa/registros-por-municipio
  * Agrupa registros por municipio
+ * Filtra por los números asignados al usuario autenticado
  */
-router.get('/registros-por-municipio', async (req: Request, res: Response) => {
+router.get('/registros-por-municipio', authenticate, async (req: Request, res: Response) => {
   try {
     const { estado } = req.query;
+    const userId = (req as any).userId;
 
-    // Obtener todos los registros con domicilio
+    // Obtener todos los registros del usuario con domicilio
     const [registros] = await pool.query<RowDataPacket[]>(
-      `SELECT id, Domicilio FROM ine_registros WHERE Domicilio IS NOT NULL`
+      `SELECT id, Domicilio FROM ine_registros 
+       WHERE Domicilio IS NOT NULL
+         AND from_number IN (
+           SELECT numero_whatsapp 
+           FROM usuarios_numeros 
+           WHERE usuario_id = ? AND activo = TRUE
+         )`,
+      [userId]
     );
 
     // Agrupar por municipio
@@ -364,14 +412,23 @@ router.get('/registros-por-municipio', async (req: Request, res: Response) => {
 /**
  * Endpoint: GET /api/mapa/registros-por-seccion
  * Agrupa registros por sección electoral
+ * Filtra por los números asignados al usuario autenticado
  */
-router.get('/registros-por-seccion', async (req: Request, res: Response) => {
+router.get('/registros-por-seccion', authenticate, async (req: Request, res: Response) => {
   try {
     const { estado, municipio } = req.query;
+    const userId = (req as any).userId;
 
-    // Obtener registros con sección
+    // Obtener registros del usuario con sección
     const [registros] = await pool.query<RowDataPacket[]>(
-      `SELECT id, Domicilio, Seccion FROM ine_registros WHERE Seccion IS NOT NULL AND Domicilio IS NOT NULL`
+      `SELECT id, Domicilio, Seccion FROM ine_registros 
+       WHERE Seccion IS NOT NULL AND Domicilio IS NOT NULL
+         AND from_number IN (
+           SELECT numero_whatsapp 
+           FROM usuarios_numeros 
+           WHERE usuario_id = ? AND activo = TRUE
+         )`,
+      [userId]
     );
 
     // Agrupar por sección

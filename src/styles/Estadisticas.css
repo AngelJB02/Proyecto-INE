@@ -32,6 +32,27 @@
   gap: 1rem;
 }
 
+.filtro-periodo {
+  grid-column: 1 / -1;
+}
+
+.select-periodo {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: white;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.select-periodo:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
 .filtro-group {
   display: flex;
   flex-direction: column;
@@ -175,6 +196,50 @@
   border-color: var(--primary-color);
 }
 
+.empleado-dropdown:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.loading-empleados {
+  padding: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.error-empleados {
+  padding: 1rem;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-reintentar {
+  padding: 0.5rem 1rem;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-reintentar:hover {
+  background-color: #b91c1c;
+}
+
+.no-empleados {
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
@@ -241,4 +306,41 @@
     flex-direction: column;
     gap: 0.5rem;
   }
+}
+
+/* Tabla de porcentajes */
+.porcentajes-tabla {
+  margin-top: 1.5rem;
+}
+
+.tabla-porcentajes {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.tabla-porcentajes thead {
+  background-color: #f3f4f6;
+}
+
+.tabla-porcentajes th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.tabla-porcentajes td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: var(--text-secondary);
+}
+
+.tabla-porcentajes tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.tabla-porcentajes tbody tr:last-child td {
+  border-bottom: none;
 }

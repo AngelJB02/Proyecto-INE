@@ -7,8 +7,9 @@ const router = Router();
 router.get('/general', async (req: Request, res: Response) => {
   try {
     console.log('🔍 Petición a /estadisticas/general recibida');
-    const { userId } = req.query;
+    const { userId, from_number } = req.query;
     console.log('userId recibido:', userId);
+    console.log('from_number recibido:', from_number);
 
     let whereClause = '';
     let params: any[] = [];
@@ -17,6 +18,16 @@ router.get('/general', async (req: Request, res: Response) => {
       // Si se especifica userId, filtrar por los números asignados a ese usuario
       whereClause = 'WHERE from_number IN (SELECT numero_whatsapp FROM usuarios_numeros WHERE usuario_id = ? AND activo = 1)';
       params = [userId];
+      
+      // Si además se especifica from_number, filtrar por ese número específico
+      if (from_number) {
+        whereClause += ' AND from_number = ?';
+        params.push(from_number);
+      }
+    } else if (from_number) {
+      // Si solo se especifica from_number
+      whereClause = 'WHERE from_number = ?';
+      params = [from_number];
     }
 
     // Total de registros
@@ -48,6 +59,10 @@ router.get('/general', async (req: Request, res: Response) => {
     if (userId) {
       numerosQuery += ' AND usuario_id = ?';
       numerosParams = [userId];
+    }
+    if (from_number) {
+      numerosQuery += userId ? ' AND numero_whatsapp = ?' : ' AND usuario_id IN (SELECT usuario_id FROM usuarios_numeros WHERE numero_whatsapp = ?)';
+      numerosParams.push(from_number);
     }
     const [activosRows] = await executeWithRetry(numerosQuery, numerosParams);
     const numerosActivos = (activosRows as any)[0].activos;

@@ -60,6 +60,11 @@ export const registrosService = {
     const { data } = await apiClient.get<RegistroINE[]>('/registros/usuario', { params: filtros });
     return data;
   },
+
+  getMisNumeros: async (): Promise<NumeroAsignado[]> => {
+    const { data } = await apiClient.get<{ ok: boolean; data: NumeroAsignado[] }>('/registros/mis-numeros');
+    return data.data;
+  },
 };
 
 // Servicios de estadísticas
