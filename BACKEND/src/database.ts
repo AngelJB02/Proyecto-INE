@@ -21,7 +21,7 @@ function createPoolConnection(): Pool {
     maxIdle: 10, // Máximo de conexiones inactivas
     idleTimeout: 60000, // Cerrar conexiones inactivas después de 60 segundos
     // Configuraciones adicionales para estabilidad
-    ssl: false,
+    // ssl: false, // Eliminar o comentar para evitar error de tipo
     multipleStatements: false,
   });
 }
