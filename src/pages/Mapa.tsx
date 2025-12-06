@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import type { EstadoStats, RegistroGeo } from '../types';
 import { mapaService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { 
   agruparRegistrosPorMunicipio,
   type MunicipioConRegistros 
@@ -33,6 +34,7 @@ function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<L.Map | null
 }
 
 export const Mapa = () => {
+  const { usuario } = useAuth();
   const [estadosData, setEstadosData] = useState<EstadoStats[]>([]);
   const [estadosDetectados, setEstadosDetectados] = useState<Map<string, EstadoConMunicipios>>(new Map());
   const [registrosGeo, setRegistrosGeo] = useState<RegistroGeo[]>([]);
@@ -75,8 +77,10 @@ export const Mapa = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Cargar registros georeferenciados
-      const response = await mapaService.getRegistrosGeoreferenciados({ limit: 10000 });
+      // Si es admin, usar endpoint exclusivo de admin
+      const response = usuario?.rol === 'admin'
+        ? await mapaService.getRegistrosGeoreferenciadosAdmin({ limit: 10000 })
+        : await mapaService.getRegistrosGeoreferenciados({ limit: 10000 });
       
       if (response.success) {
         const registros = response.data as RegistroGeo[];

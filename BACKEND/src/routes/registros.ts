@@ -96,4 +96,55 @@ router.get('/mis-numeros', authenticate, async (req: Request, res: Response) => 
   }
 });
 
+/**
+ * ENDPOINT EXCLUSIVO PARA ADMIN
+ * GET /api/registros/admin/all
+ * Obtiene TODOS los registros sin filtrar por usuario
+ */
+router.get('/admin/all', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { page = 1, from_number } = req.query;
+    const limit = 10;
+    const offset = (Number(page) - 1) * limit;
+
+    // Admin ve TODOS los registros
+    let whereClause = '';
+    const params: any[] = [];
+    
+    if (from_number) {
+      whereClause = 'WHERE ir.from_number = ?';
+      params.push(from_number);
+    }
+
+    const [rows] = await pool.execute(
+      `SELECT ir.*, COALESCE(un.nombre_contacto, ir.from_number) as nombre_contacto,
+              u.username as usuario_asignado, CONCAT(u.nombre, ' ', u.apellido) as nombre_usuario
+       FROM ine_registros ir 
+       LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
+       LEFT JOIN usuarios u ON un.usuario_id = u.id
+       ${whereClause}
+       ORDER BY ir.fecha_registro DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+
+    const [totalRows] = await pool.execute(
+      `SELECT COUNT(*) as total FROM ine_registros ir
+       ${whereClause}`,
+      params
+    );
+    const total = (totalRows as any)[0].total;
+
+    res.json({
+      page: Number(page),
+      total,
+      totalPages: Math.ceil(total / limit),
+      data: rows,
+    });
+  } catch (error) {
+    console.error('Error obteniendo todos los registros (admin):', error);
+    res.status(500).json({ ok: false, msg: 'Error interno del servidor' });
+  }
+});
+
 export default router;

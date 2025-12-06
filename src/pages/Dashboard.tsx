@@ -23,7 +23,10 @@ export const Dashboard = () => {
   const cargarEstadisticas = async () => {
     try {
       setIsLoading(true);
-      const data = await estadisticasService.getGeneral({ userId: usuario?.id });
+      // Si el usuario es admin, usar endpoint exclusivo de admin
+      const data = usuario?.rol === 'admin' 
+        ? await estadisticasService.getGeneralAdmin()
+        : await estadisticasService.getGeneral({ userId: usuario?.id });
       setEstadisticas(data);
     } catch (error) {
       console.error('Error cargando estadísticas:', error);

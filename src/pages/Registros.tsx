@@ -3,8 +3,10 @@ import type { RegistroINE } from '../types';
 import { format } from 'date-fns';
 import '../styles/Registros.css';
 import { registrosService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export const Registros = () => {
+  const { usuario } = useAuth();
   const [registros, setRegistros] = useState<RegistroINE[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
@@ -18,7 +20,10 @@ export const Registros = () => {
   const cargarRegistros = async () => {
     setIsLoading(true);
     try {
-      const response = await registrosService.getAll({ page: currentPage });
+      // Si es admin, usar endpoint exclusivo de admin
+      const response = usuario?.rol === 'admin'
+        ? await registrosService.getAllAdmin({ page: currentPage })
+        : await registrosService.getAll({ page: currentPage });
       setRegistros(response.data); // Usar la propiedad `data` de la respuesta
       setTotalPages(response.totalPages); // Actualizar el total de páginas
     } catch (error) {

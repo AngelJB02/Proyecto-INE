@@ -65,6 +65,12 @@ export const registrosService = {
     const { data } = await apiClient.get<{ ok: boolean; data: NumeroAsignado[] }>('/registros/mis-numeros');
     return data.data;
   },
+
+  // Endpoint exclusivo para admin
+  getAllAdmin: async (filtros?: FiltrosEstadisticas): Promise<{ page: number; total: number; totalPages: number; data: RegistroINE[] }> => {
+    const { data } = await apiClient.get<{ page: number; total: number; totalPages: number; data: RegistroINE[] }>('/registros/admin/all', { params: filtros });
+    return data;
+  },
 };
 
 // Servicios de estadísticas
@@ -72,6 +78,14 @@ export const estadisticasService = {
   getGeneral: async (filtros?: FiltrosEstadisticas): Promise<EstadisticasGeneral> => {
     const { data } = await apiClient.get<EstadisticasGeneral>('/estadisticas/general', { 
       params: filtros 
+    });
+    return data;
+  },
+
+  // Endpoint exclusivo para admin
+  getGeneralAdmin: async (filtros?: FiltrosEstadisticas): Promise<EstadisticasGeneral & { estadisticas_por_usuario?: any[] }> => {
+    const { data } = await apiClient.get<EstadisticasGeneral & { estadisticas_por_usuario?: any[] }>('/estadisticas/admin/general', {
+      params: filtros
     });
     return data;
   },
@@ -133,6 +147,27 @@ export const mapaService = {
   
   getEstados: async (): Promise<any> => {
     const { data } = await apiClient.get('/mapa/estados');
+    return data;
+  },
+
+  // Endpoints exclusivos para admin
+  getRegistrosGeoreferenciadosAdmin: async (filtros?: { estado?: string; municipio?: string; seccion?: string; limit?: number }): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/admin/registros-georeferenciados', { params: filtros });
+    return data;
+  },
+  
+  getRegistrosPorEstadoAdmin: async (): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/admin/registros-por-estado');
+    return data;
+  },
+  
+  getRegistrosPorMunicipioAdmin: async (estado?: string): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/admin/registros-por-municipio', { params: { estado } });
+    return data;
+  },
+  
+  getRegistrosPorSeccionAdmin: async (filtros?: { estado?: string; municipio?: string }): Promise<any> => {
+    const { data } = await apiClient.get('/mapa/admin/registros-por-seccion', { params: filtros });
     return data;
   },
   

@@ -52,8 +52,8 @@ export const Estadisticas = () => {
       setIsLoading(true);
       setError(null);
       
-      // Cargar estadísticas generales sin filtro
-      const stats = await estadisticasService.getGeneral();
+      // Admin usa endpoint exclusivo
+      const stats = await estadisticasService.getGeneralAdmin();
       setEstadisticas(stats);
       
       // Obtener lista de números únicos para el filtro
@@ -98,8 +98,8 @@ export const Estadisticas = () => {
       
       let data: EstadisticasGeneral | undefined;
       if (esAdmin) {
-        // Admin puede ver todo o filtrar por número específico
-        data = await estadisticasService.getGeneral({ 
+        // Admin usa el endpoint admin con filtro opcional por número
+        data = await estadisticasService.getGeneralAdmin({ 
           ...filtros,
           ...(numeroSeleccionado ? { from_number: numeroSeleccionado } : {})
         });

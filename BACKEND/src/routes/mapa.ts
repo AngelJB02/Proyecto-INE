@@ -552,4 +552,281 @@ router.get('/municipios/:estado', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * ENDPOINTS EXCLUSIVOS PARA ADMIN
+ * Estos endpoints muestran TODOS los registros sin filtrar por usuario
+ */
+
+/**
+ * Endpoint: GET /api/mapa/admin/registros-georeferenciados
+ * Admin: Obtiene TODOS los registros georeferenciados
+ */
+router.get('/admin/registros-georeferenciados', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { estado, municipio, seccion, limit = 1000 } = req.query;
+
+    // Admin ve TODOS los registros
+    let query = `
+      SELECT 
+        r.id,
+        r.Nombre,
+        r.Domicilio,
+        r.Seccion,
+        r.fecha_registro
+      FROM ine_registros r
+      WHERE r.Domicilio IS NOT NULL
+    `;
+
+    const params: any[] = [];
+
+    if (seccion) {
+      query += ` AND r.Seccion = ?`;
+      params.push(seccion);
+    }
+
+    query += ` ORDER BY r.fecha_registro DESC LIMIT ?`;
+    params.push(parseInt(limit as string));
+
+    const [registros] = await pool.query<RowDataPacket[]>(query, params);
+
+    // Procesar cada registro para extraer CP y buscar info geográfica
+    const resultados: RegistroGeo[] = [];
+
+    for (const registro of registros) {
+      const cp = extractCodigoPostal(registro.Domicilio);
+      
+      if (cp) {
+        const [cpInfo] = await pool.query<RowDataPacket[]>(
+          `SELECT d_codigo, d_estado, d_mnpio, d_asenta, d_zona 
+           FROM codigos_postales 
+           WHERE d_codigo = ? 
+           LIMIT 1`,
+          [cp]
+        );
+
+        if (cpInfo.length > 0) {
+          const info = cpInfo[0];
+          
+          if (estado && info.d_estado !== estado) continue;
+          if (municipio && info.d_mnpio !== municipio) continue;
+
+          resultados.push({
+            id: registro.id,
+            Nombre: registro.Nombre,
+            Domicilio: registro.Domicilio,
+            Seccion: registro.Seccion,
+            fecha_registro: registro.fecha_registro,
+            codigo_postal: info.d_codigo,
+            estado: info.d_estado,
+            municipio: info.d_mnpio,
+            colonia: info.d_asenta,
+            d_zona: info.d_zona
+          } as RegistroGeo);
+        }
+      }
+    }
+    
+    res.json({
+      success: true,
+      data: resultados,
+      total: resultados.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo registros georeferenciados (admin):', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener registros georeferenciados',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+});
+
+/**
+ * Endpoint: GET /api/mapa/admin/registros-por-estado
+ * Admin: Agrupa TODOS los registros por estado
+ */
+router.get('/admin/registros-por-estado', authenticate, async (req: Request, res: Response) => {
+  try {
+    // Obtener TODOS los registros con domicilio
+    const [registros] = await pool.query<RowDataPacket[]>(
+      'SELECT id, Domicilio FROM ine_registros WHERE Domicilio IS NOT NULL'
+    );
+
+    const estadosMap = new Map<string, { estado: string; codigo_estado: string; cantidad: number }>();
+
+    for (const registro of registros) {
+      const cp = extractCodigoPostal(registro.Domicilio);
+      
+      if (cp) {
+        const [cpInfo] = await pool.query<RowDataPacket[]>(
+          `SELECT d_estado, c_estado FROM codigos_postales WHERE d_codigo = ? LIMIT 1`,
+          [cp]
+        );
+
+        if (cpInfo.length > 0) {
+          const estado = cpInfo[0].d_estado;
+          const codigoEstado = cpInfo[0].c_estado;
+          
+          if (!estadosMap.has(estado)) {
+            estadosMap.set(estado, {
+              estado: estado,
+              codigo_estado: codigoEstado,
+              cantidad: 0
+            });
+          }
+          
+          const estadoData = estadosMap.get(estado)!;
+          estadoData.cantidad++;
+        }
+      }
+    }
+
+    const resultado = Array.from(estadosMap.values()).sort((a, b) => b.cantidad - a.cantidad);
+    
+    res.json({
+      success: true,
+      data: resultado,
+      total: resultado.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estadísticas por estado (admin):', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener estadísticas por estado',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+});
+
+/**
+ * Endpoint: GET /api/mapa/admin/registros-por-municipio
+ * Admin: Agrupa TODOS los registros por municipio
+ */
+router.get('/admin/registros-por-municipio', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { estado } = req.query;
+
+    // Obtener TODOS los registros con domicilio
+    const [registros] = await pool.query<RowDataPacket[]>(
+      'SELECT id, Domicilio FROM ine_registros WHERE Domicilio IS NOT NULL'
+    );
+
+    const municipiosMap = new Map<string, { estado: string; municipio: string; codigo_municipio: string; cantidad: number }>();
+
+    for (const registro of registros) {
+      const cp = extractCodigoPostal(registro.Domicilio);
+      
+      if (cp) {
+        const [cpInfo] = await pool.query<RowDataPacket[]>(
+          `SELECT d_estado, d_mnpio, c_mnpio FROM codigos_postales WHERE d_codigo = ? LIMIT 1`,
+          [cp]
+        );
+
+        if (cpInfo.length > 0) {
+          const info = cpInfo[0];
+          
+          if (estado && info.d_estado !== estado) continue;
+          
+          const key = `${info.d_estado}|${info.d_mnpio}`;
+          
+          if (!municipiosMap.has(key)) {
+            municipiosMap.set(key, {
+              estado: info.d_estado,
+              municipio: info.d_mnpio,
+              codigo_municipio: info.c_mnpio,
+              cantidad: 0
+            });
+          }
+          
+          const municipioData = municipiosMap.get(key)!;
+          municipioData.cantidad++;
+        }
+      }
+    }
+
+    const resultado = Array.from(municipiosMap.values()).sort((a, b) => b.cantidad - a.cantidad);
+    
+    res.json({
+      success: true,
+      data: resultado,
+      total: resultado.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estadísticas por municipio (admin):', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener estadísticas por municipio',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+});
+
+/**
+ * Endpoint: GET /api/mapa/admin/registros-por-seccion
+ * Admin: Agrupa TODOS los registros por sección electoral
+ */
+router.get('/admin/registros-por-seccion', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { estado, municipio } = req.query;
+
+    // Obtener TODOS los registros con sección
+    const [registros] = await pool.query<RowDataPacket[]>(
+      'SELECT id, Domicilio, Seccion FROM ine_registros WHERE Seccion IS NOT NULL AND Domicilio IS NOT NULL'
+    );
+
+    const seccionesMap = new Map<string, { seccion: string; estado: string; municipio: string; cantidad: number }>();
+
+    for (const registro of registros) {
+      const cp = extractCodigoPostal(registro.Domicilio);
+      
+      if (cp) {
+        const [cpInfo] = await pool.query<RowDataPacket[]>(
+          `SELECT d_estado, d_mnpio FROM codigos_postales WHERE d_codigo = ? LIMIT 1`,
+          [cp]
+        );
+
+        if (cpInfo.length > 0) {
+          const info = cpInfo[0];
+          
+          if (estado && info.d_estado !== estado) continue;
+          if (municipio && info.d_mnpio !== municipio) continue;
+          
+          const key = `${registro.Seccion}|${info.d_estado}|${info.d_mnpio}`;
+          
+          if (!seccionesMap.has(key)) {
+            seccionesMap.set(key, {
+              seccion: registro.Seccion,
+              estado: info.d_estado,
+              municipio: info.d_mnpio,
+              cantidad: 0
+            });
+          }
+          
+          const seccionData = seccionesMap.get(key)!;
+          seccionData.cantidad++;
+        }
+      }
+    }
+
+    const resultado = Array.from(seccionesMap.values()).sort((a, b) => b.cantidad - a.cantidad);
+    
+    res.json({
+      success: true,
+      data: resultado,
+      total: resultado.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estadísticas por sección (admin):', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener estadísticas por sección',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+});
+
 export default router;
