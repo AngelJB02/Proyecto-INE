@@ -4,18 +4,29 @@ import { retryQuery } from './utils/dbRetry';
 let pool: Pool;
 
 function createPoolConnection(): Pool {
+  // Usar variables de entorno o valores por defecto para producción
+  const dbConfig = {
+    host: process.env.DB_HOST || '192.99.212.154',
+    user: process.env.DB_USER || 'credencialdb',
+    password: process.env.DB_PASSWORD || 'E6f1?I0ppQlyvsz?',
+    database: process.env.DB_NAME || 'ine_db',
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306
+  };
+  
   console.log('🔧 Configuración de DB:', {
-    host: process.env.DB_HOST || 'NO CONFIGURADO',
-    user: process.env.DB_USER || 'NO CONFIGURADO',
-    database: process.env.DB_NAME || 'NO CONFIGURADO',
-    hasPassword: !!process.env.DB_PASSWORD
+    host: dbConfig.host,
+    user: dbConfig.user,
+    database: dbConfig.database,
+    port: dbConfig.port,
+    hasPassword: !!dbConfig.password
   });
   
   return createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    host: dbConfig.host,
+    user: dbConfig.user,
+    password: dbConfig.password,
+    database: dbConfig.database,
+    port: dbConfig.port,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
