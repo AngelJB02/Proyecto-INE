@@ -78,7 +78,7 @@ npm install
 El archivo `.env` ya está configurado con:
 
 ```env
-VITE_API_URL=http://localhost:3000/api
+VITE_API_URL=https://proyecto-ine.onrender.com/api
 ```
 
 3. **Ejecutar en desarrollo**

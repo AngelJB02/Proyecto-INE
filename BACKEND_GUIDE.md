@@ -387,7 +387,7 @@ app.listen(PORT, () => {
 
 5. **Probar la API**
    ```bash
-   curl http://localhost:3000/api/health
+   curl https://proyecto-ine.onrender.com/api/health
    ```
 
 ## Endpoints a Implementar
