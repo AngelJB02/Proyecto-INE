@@ -4,6 +4,13 @@ import { retryQuery } from './utils/dbRetry';
 let pool: Pool;
 
 function createPoolConnection(): Pool {
+  console.log('🔧 Configuración de DB:', {
+    host: process.env.DB_HOST || 'NO CONFIGURADO',
+    user: process.env.DB_USER || 'NO CONFIGURADO',
+    database: process.env.DB_NAME || 'NO CONFIGURADO',
+    hasPassword: !!process.env.DB_PASSWORD
+  });
+  
   return createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,

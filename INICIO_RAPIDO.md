@@ -133,7 +133,7 @@ npm run lint         # Verificar errores de código
 ## 🌐 URLs del Sistema
 
 - **Frontend Dev:** http://localhost:5173
-- **Backend API:** http://localhost:3000 (cuando lo crees)
+- **Backend API:** https://proyecto-ine.onrender.com (cuando lo crees)
 - **MySQL:** localhost:3306
 
 ## 🎓 Aprendizaje
