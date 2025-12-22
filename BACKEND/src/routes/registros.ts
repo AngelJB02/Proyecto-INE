@@ -28,7 +28,7 @@ function authenticate(req: Request, res: Response, next: any) {
 // GET /api/registros con paginación
 router.get('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const { page = 1, from_number } = req.query; // Página actual y número específico
+    const { page = 1, from_number, nombre_contacto } = req.query; // Página actual, número y nombre
     const limit = 10; // Registros por página
     const offset = (Number(page) - 1) * limit; // Calcular el offset
     const userId = (req as any).userId;
@@ -36,10 +36,13 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     // Si se especifica from_number, filtrar por ese número específico
     let whereClause = 'WHERE ir.from_number IN (SELECT numero_whatsapp FROM usuarios_numeros WHERE usuario_id = ? AND activo = TRUE)';
     const params: any[] = [userId];
-    
     if (from_number) {
       whereClause += ' AND ir.from_number = ?';
       params.push(from_number);
+    }
+    if (nombre_contacto) {
+      whereClause += ' AND un.nombre_contacto LIKE ?';
+      params.push(`%${nombre_contacto}%`);
     }
 
     const [rows] = await pool.execute(
@@ -54,6 +57,7 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
 
     const [totalRows] = await pool.execute(
       `SELECT COUNT(*) as total FROM ine_registros ir
+       LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
        ${whereClause}`,
       params
     );
@@ -103,17 +107,20 @@ router.get('/mis-numeros', authenticate, async (req: Request, res: Response) => 
  */
 router.get('/admin/all', authenticate, async (req: Request, res: Response) => {
   try {
-    const { page = 1, from_number } = req.query;
+    const { page = 1, from_number, nombre_contacto } = req.query;
     const limit = 10;
     const offset = (Number(page) - 1) * limit;
 
     // Admin ve TODOS los registros
     let whereClause = '';
     const params: any[] = [];
-    
     if (from_number) {
       whereClause = 'WHERE ir.from_number = ?';
       params.push(from_number);
+    }
+    if (nombre_contacto) {
+      whereClause += (whereClause ? ' AND' : 'WHERE') + ' un.nombre_contacto LIKE ?';
+      params.push(`%${nombre_contacto}%`);
     }
 
     const [rows] = await pool.execute(
@@ -130,6 +137,7 @@ router.get('/admin/all', authenticate, async (req: Request, res: Response) => {
 
     const [totalRows] = await pool.execute(
       `SELECT COUNT(*) as total FROM ine_registros ir
+       LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
        ${whereClause}`,
       params
     );

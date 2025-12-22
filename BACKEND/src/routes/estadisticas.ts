@@ -70,6 +70,7 @@ router.get('/general', async (req: Request, res: Response) => {
     // Registros por número de WhatsApp
     const [numeroRows] = await executeWithRetry(`
       SELECT 
+        ir.from_number as numero_whatsapp,
         COALESCE(un.nombre_contacto, ir.from_number) as numero, 
         COUNT(*) as cantidad 
       FROM ine_registros ir
@@ -78,7 +79,7 @@ router.get('/general', async (req: Request, res: Response) => {
       GROUP BY ir.from_number, un.nombre_contacto 
       ORDER BY cantidad DESC
     `, params);
-    const registros_por_numero = numeroRows as { numero: string; cantidad: number }[];
+    const registros_por_numero = numeroRows as { numero_whatsapp: string; numero: string; cantidad: number }[];
 
     // Registros por estado (extrayendo CP del Domicilio)
     const [estadoRows] = await executeWithRetry(`
@@ -124,36 +125,47 @@ router.get('/general', async (req: Request, res: Response) => {
 router.get('/admin/general', async (req: Request, res: Response) => {
   try {
     console.log('🔍 Petición a /estadisticas/admin/general recibida (ADMIN)');
-    const { from_number } = req.query;
+    const { from_number, nombre_contacto } = req.query;
     
-    // Admin ve TODOS los registros, pero puede filtrar por número específico
+    // Admin ve TODOS los registros, pero puede filtrar por número o nombre específico
     let whereClause = '';
     const params: any[] = [];
     
     if (from_number) {
-      whereClause = 'WHERE from_number = ?';
+      whereClause = 'WHERE ir.from_number = ?';
       params.push(from_number);
+    }
+    
+    if (nombre_contacto) {
+      whereClause += (whereClause ? ' AND' : 'WHERE') + ' un.nombre_contacto LIKE ?';
+      params.push(`%${nombre_contacto}%`);
     }
 
     // Total de registros
     const [totalRows] = await executeWithRetry(
-      `SELECT COUNT(*) as total FROM ine_registros ${whereClause}`,
+      `SELECT COUNT(*) as total FROM ine_registros ir
+       LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
+       ${whereClause}`,
       params
     );
     const totalRegistros = (totalRows as any)[0].total;
 
     // Registros de hoy
-    const hoyClause = whereClause ? `${whereClause} AND DATE(fecha_registro) = CURDATE()` : 'WHERE DATE(fecha_registro) = CURDATE()';
+    const hoyClause = whereClause ? `${whereClause} AND DATE(ir.fecha_registro) = CURDATE()` : 'WHERE DATE(ir.fecha_registro) = CURDATE()';
     const [hoyRows] = await executeWithRetry(
-      `SELECT COUNT(*) as hoy FROM ine_registros ${hoyClause}`,
+      `SELECT COUNT(*) as hoy FROM ine_registros ir
+       LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
+       ${hoyClause}`,
       params
     );
     const registrosHoy = (hoyRows as any)[0].hoy;
 
     // Registros de este mes
-    const mesClause = whereClause ? `${whereClause} AND MONTH(fecha_registro) = MONTH(CURDATE()) AND YEAR(fecha_registro) = YEAR(CURDATE())` : 'WHERE MONTH(fecha_registro) = MONTH(CURDATE()) AND YEAR(fecha_registro) = YEAR(CURDATE())';
+    const mesClause = whereClause ? `${whereClause} AND MONTH(ir.fecha_registro) = MONTH(CURDATE()) AND YEAR(ir.fecha_registro) = YEAR(CURDATE())` : 'WHERE MONTH(ir.fecha_registro) = MONTH(CURDATE()) AND YEAR(ir.fecha_registro) = YEAR(CURDATE())';
     const [mesRows] = await executeWithRetry(
-      `SELECT COUNT(*) as mes FROM ine_registros ${mesClause}`,
+      `SELECT COUNT(*) as mes FROM ine_registros ir
+       LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
+       ${mesClause}`,
       params
     );
     const registrosMes = (mesRows as any)[0].mes;
@@ -171,6 +183,7 @@ router.get('/admin/general', async (req: Request, res: Response) => {
     // Registros por número de WhatsApp
     const [numeroRows] = await executeWithRetry(`
       SELECT 
+        ir.from_number as numero_whatsapp,
         COALESCE(un.nombre_contacto, ir.from_number) as numero, 
         COUNT(*) as cantidad 
       FROM ine_registros ir
@@ -179,12 +192,13 @@ router.get('/admin/general', async (req: Request, res: Response) => {
       GROUP BY ir.from_number, un.nombre_contacto 
       ORDER BY cantidad DESC
     `, params);
-    const registros_por_numero = numeroRows as { numero: string; cantidad: number }[];
+    const registros_por_numero = numeroRows as { numero_whatsapp: string; numero: string; cantidad: number }[];
 
     // Registros por estado
     const [estadoRows] = await executeWithRetry(`
       SELECT cp.d_estado as estado, COUNT(DISTINCT ir.id) as cantidad
       FROM ine_registros ir
+      LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
       JOIN codigos_postales cp ON cp.d_codigo = REGEXP_SUBSTR(ir.Domicilio, '[0-9]{5}')
       ${whereClause}
       GROUP BY cp.d_estado
@@ -194,10 +208,11 @@ router.get('/admin/general', async (req: Request, res: Response) => {
 
     // Registros por sección
     const [seccionRows] = await executeWithRetry(`
-      SELECT Seccion as seccion, COUNT(*) as cantidad 
-      FROM ine_registros 
+      SELECT ir.Seccion as seccion, COUNT(*) as cantidad 
+      FROM ine_registros ir
+      LEFT JOIN usuarios_numeros un ON ir.from_number = un.numero_whatsapp AND un.activo = TRUE
       ${whereClause}
-      GROUP BY Seccion 
+      GROUP BY ir.Seccion 
       ORDER BY cantidad DESC
     `, params);
     const registros_por_seccion = seccionRows as { seccion: string; cantidad: number }[];

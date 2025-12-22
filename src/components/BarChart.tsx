@@ -75,7 +75,7 @@ export const BarChart = ({ data, dataKey, categoryKey, color }: BarChartProps) =
           radius={[8, 8, 0, 0]}
           fill={`url(#gradient-${color.replace('#', '')})`}
         >
-          {data.map((entry, index) => (
+          {data.map((_, index) => (
             <Cell 
               key={`cell-${index}`} 
               fill={`url(#gradient-${color.replace('#', '')})`}

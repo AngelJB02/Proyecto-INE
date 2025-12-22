@@ -10,7 +10,7 @@ import '../styles/Estadisticas.css';
 
 export const Estadisticas = () => {
   const { usuario: usuarioActual } = useAuth();
-  const [numeroSeleccionado, setNumeroSeleccionado] = useState<string | null>(null);
+  const [selectorValor, setSelectorValor] = useState<string | null>(null);
   const [misNumeros, setMisNumeros] = useState<NumeroAsignado[]>([]); // Números del cliente
   const [todosLosNumeros, setTodosLosNumeros] = useState<{ numero: string; nombre: string }[]>([]); // Para admin
   const [estadisticas, setEstadisticas] = useState<EstadisticasGeneral | null>(null);
@@ -33,18 +33,17 @@ export const Estadisticas = () => {
   }, [esAdmin, usuarioActual]);
 
   useEffect(() => {
-    if (numeroSeleccionado) {
+    if (selectorValor) {
       cargarEstadisticas();
       cargarRegistrosRecientes();
     } else if (esAdmin) {
-      // Admin sin filtro ve todo
       cargarEstadisticas();
       cargarRegistrosRecientes();
     } else {
       setEstadisticas(null);
       setRegistrosRecientes([]);
     }
-  }, [numeroSeleccionado, filtros]);
+  }, [selectorValor, filtros]);
 
   const cargarEstadisticasGenerales = async () => {
     try {
@@ -58,8 +57,8 @@ export const Estadisticas = () => {
       
       // Obtener lista de números únicos para el filtro
       if (stats.registros_por_numero && stats.registros_por_numero.length > 0) {
-        const numeros = stats.registros_por_numero.map(item => ({
-          numero: item.numero,
+        const numeros = stats.registros_por_numero.map((item: any) => ({
+          numero: item.numero_whatsapp,
           nombre: item.numero
         }));
         setTodosLosNumeros(numeros);
@@ -91,6 +90,13 @@ export const Estadisticas = () => {
     }
   };
 
+  // Utilidad para saber si es número
+  const esNumero = (valor: string | null) => {
+    if (!valor) return false;
+    // Considera número si solo contiene dígitos y opcionalmente +
+    return /^\+?\d{8,}$/.test(valor);
+  };
+
   const cargarEstadisticas = async () => {
     try {
       setIsLoading(true);
@@ -98,16 +104,21 @@ export const Estadisticas = () => {
       
       let data: EstadisticasGeneral | undefined;
       if (esAdmin) {
-        // Admin usa el endpoint admin con filtro opcional por número
-        data = await estadisticasService.getGeneralAdmin({ 
-          ...filtros,
-          ...(numeroSeleccionado ? { from_number: numeroSeleccionado } : {})
-        });
-      } else if (numeroSeleccionado) {
+        // Admin usa el endpoint admin con filtro opcional por número o nombre
+        let filtro: any = { ...filtros };
+        if (selectorValor) {
+          if (esNumero(selectorValor)) {
+            filtro.from_number = selectorValor;
+          } else {
+            filtro.nombre_contacto = selectorValor;
+          }
+        }
+        data = await estadisticasService.getGeneralAdmin(filtro);
+      } else if (selectorValor) {
         // Cliente ve estadísticas de un número específico
         data = await estadisticasService.getGeneral({ 
           ...filtros,
-          from_number: numeroSeleccionado
+          from_number: selectorValor
         });
       }
       
@@ -127,15 +138,20 @@ export const Estadisticas = () => {
       
       let registros;
       if (esAdmin) {
-        // Admin puede ver todos los registros o filtrar por número
-        const response = await registrosService.getAll({ 
-          page: 1,
-          ...(numeroSeleccionado ? { from_number: numeroSeleccionado } : {})
-        });
+        // Admin puede ver todos los registros o filtrar por número o nombre_contacto
+        let filtro: any = { page: 1 };
+        if (selectorValor) {
+          if (esNumero(selectorValor)) {
+            filtro.from_number = selectorValor;
+          } else {
+            filtro.nombre_contacto = selectorValor;
+          }
+        }
+        const response = await registrosService.getAll(filtro);
         registros = response.data.slice(0, 10);
-      } else if (numeroSeleccionado) {
+      } else if (selectorValor) {
         // Cliente ve registros de un número específico
-        const response = await registrosService.getAll({ page: 1, from_number: numeroSeleccionado });
+        const response = await registrosService.getAll({ page: 1, from_number: selectorValor });
         registros = response.data.slice(0, 10);
       }
       
@@ -224,15 +240,15 @@ export const Estadisticas = () => {
     }));
   };
 
-  const handleNumeroChange = (numero: string) => {
-    setNumeroSeleccionado(numero || null);
+  const handleSelectorChange = (valor: string) => {
+    setSelectorValor(valor || null);
     setFiltros({}); // Limpiar filtros
     setPeriodoTiempo('todo'); // Resetear período de tiempo
   };
 
   const numeroMostrado = esAdmin 
-    ? todosLosNumeros.find(n => n.numero === numeroSeleccionado)
-    : misNumeros.find(n => n.numero_whatsapp === numeroSeleccionado);
+    ? todosLosNumeros.find(n => n.numero === selectorValor)
+    : misNumeros.find(n => n.numero_whatsapp === selectorValor);
 
   return (
     <div className="estadisticas-page">
@@ -247,8 +263,8 @@ export const Estadisticas = () => {
           <label htmlFor="numero-select">Filtrar por Número/Empleado (Opcional):</label>
           <select
             id="numero-select"
-            value={numeroSeleccionado || ''}
-            onChange={(e) => handleNumeroChange(e.target.value)}
+            value={selectorValor || ''}
+            onChange={(e) => handleSelectorChange(e.target.value)}
             className="empleado-dropdown"
           >
             <option value="">-- Todos los registros --</option>
@@ -276,8 +292,8 @@ export const Estadisticas = () => {
             <>
               <select
                 id="numero-select"
-                value={numeroSeleccionado || ''}
-                onChange={(e) => handleNumeroChange(e.target.value)}
+                value={selectorValor || ''}
+                onChange={(e) => handleSelectorChange(e.target.value)}
                 className="empleado-dropdown"
                 disabled={misNumeros.length === 0}
               >
@@ -296,7 +312,7 @@ export const Estadisticas = () => {
         </div>
       )}
 
-      {!numeroSeleccionado && !esAdmin ? (
+      {!selectorValor && !esAdmin ? (
         <div className="empty-state">
           <p>
             <FiUser style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
@@ -310,7 +326,7 @@ export const Estadisticas = () => {
       ) : (
         <>
           {/* Información del empleado/número */}
-          {(numeroSeleccionado || !esAdmin) && (
+          {(selectorValor || !esAdmin) && (
             <div className="empleado-info">
               <h2>
                 <FiUser style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
@@ -322,7 +338,7 @@ export const Estadisticas = () => {
               <p className="empleado-details">
                 <span>
                   <FiSmartphone style={{ display: 'inline-block', marginRight: '0.25rem', verticalAlign: 'middle' }} />
-                  {numeroSeleccionado || 'N/A'}
+                  {selectorValor || 'N/A'}
                 </span>
               </p>
             </div>

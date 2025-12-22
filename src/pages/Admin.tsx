@@ -15,7 +15,6 @@ import {
   FiMapPin, 
   FiFileText,
   FiPlus,
-  FiEdit,
   FiTrash2,
   FiX,
   FiUsers,
