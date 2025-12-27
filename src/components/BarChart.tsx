@@ -5,6 +5,8 @@ interface BarChartProps {
   dataKey: string;
   categoryKey: string;
   color: string;
+  isHighlighted?: (item: any) => boolean;
+  highlightColor?: string;
 }
 
 // Función para generar gradiente de colores
@@ -19,8 +21,9 @@ const getGradientColor = (baseColor: string) => {
   return colorMap[baseColor] || [baseColor, baseColor];
 };
 
-export const BarChart = ({ data, dataKey, categoryKey, color }: BarChartProps) => {
+export const BarChart = ({ data, dataKey, categoryKey, color, isHighlighted, highlightColor }: BarChartProps) => {
   const [gradientStart, gradientEnd] = getGradientColor(color);
+  const [hStart, hEnd] = getGradientColor(highlightColor || color);
   
   return (
     <ResponsiveContainer width="100%" height={320}>
@@ -33,6 +36,12 @@ export const BarChart = ({ data, dataKey, categoryKey, color }: BarChartProps) =
             <stop offset="0%" stopColor={gradientStart} stopOpacity={0.9} />
             <stop offset="100%" stopColor={gradientEnd} stopOpacity={0.7} />
           </linearGradient>
+          {highlightColor && (
+            <linearGradient id={`gradient-${highlightColor.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={hStart} stopOpacity={0.9} />
+              <stop offset="100%" stopColor={hEnd} stopOpacity={0.7} />
+            </linearGradient>
+          )}
         </defs>
         <CartesianGrid 
           strokeDasharray="3 3" 
@@ -75,12 +84,16 @@ export const BarChart = ({ data, dataKey, categoryKey, color }: BarChartProps) =
           radius={[8, 8, 0, 0]}
           fill={`url(#gradient-${color.replace('#', '')})`}
         >
-          {data.map((_, index) => (
+          {data.map((item, index) => {
+            const highlighted = isHighlighted ? isHighlighted(item) : false;
+            const useColor = highlighted && highlightColor ? highlightColor : color;
+            return (
             <Cell 
               key={`cell-${index}`} 
-              fill={`url(#gradient-${color.replace('#', '')})`}
+              fill={`url(#gradient-${useColor.replace('#', '')})`}
             />
-          ))}
+            );
+          })}
         </Bar>
       </RechartsBarChart>
     </ResponsiveContainer>

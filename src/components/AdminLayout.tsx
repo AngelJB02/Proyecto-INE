@@ -4,11 +4,11 @@ import { FiBarChart2, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
 import '../styles/Layout.css';
 import type { ReactNode } from 'react';
 
-interface LayoutProps {
+interface AdminLayoutProps {
   children: ReactNode;
 }
 
-export const Layout = ({ children }: LayoutProps) => {
+export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,7 +26,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className="navbar-brand">
           <h2>
             <FiBarChart2 className="brand-icon" />
-            Sistema INE
+            Sistema INE — Admin
           </h2>
         </div>
         
@@ -51,6 +51,12 @@ export const Layout = ({ children }: LayoutProps) => {
               Registros
             </Link>
           </li>
+          <li>
+            <Link to="/admin" className={isActive('/admin') ? 'active' : ''}>
+              <FiSettings style={{ display: 'inline-block', marginRight: '0.25rem', verticalAlign: 'middle' }} />
+              Administración
+            </Link>
+          </li>
         </ul>
 
         <div className="navbar-user">
@@ -60,6 +66,9 @@ export const Layout = ({ children }: LayoutProps) => {
             </div>
             <div className="user-details">
               <span className="username">{usuario?.username}</span>
+              <span className="badge badge-admin">
+                Admin
+              </span>
             </div>
           </div>
           <button onClick={handleLogout} className="btn-logout">
@@ -75,3 +84,4 @@ export const Layout = ({ children }: LayoutProps) => {
     </div>
   );
 };
+

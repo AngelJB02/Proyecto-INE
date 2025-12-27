@@ -1,30 +1,28 @@
 import { useState, useEffect } from 'react';
-import type { RegistroINE } from '../types';
+import type { RegistroINE } from '../../types';
 import { format } from 'date-fns';
-import '../styles/Registros.css';
-import { registrosService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import '../../styles/Registros.css';
+import { registrosService } from '../../services/api';
 
-export const Registros = () => {
-  const { usuario } = useAuth();
+export const AdminRegistros = () => {
   const [registros, setRegistros] = useState<RegistroINE[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
-  const [currentPage, setCurrentPage] = useState(1); // Estado para la página actual
-  const [totalPages, setTotalPages] = useState(1); // Estado para el total de páginas
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    cargarRegistros();
-  }, [currentPage]); // Agregar currentPage como dependencia
+    cargarRegistrosAdmin();
+  }, [currentPage]);
 
-  const cargarRegistros = async () => {
+  const cargarRegistrosAdmin = async () => {
     setIsLoading(true);
     try {
-      const response = await registrosService.getAll({ page: currentPage });
+      const response = await registrosService.getAllAdmin({ page: currentPage });
       setRegistros(response.data);
       setTotalPages(response.totalPages);
     } catch (error) {
-      console.error('Error cargando registros:', error);
+      console.error('Error cargando registros (admin):', error);
       setRegistros([]);
     } finally {
       setIsLoading(false);
@@ -47,7 +45,7 @@ export const Registros = () => {
   return (
     <div className="registros-page">
       <div className="registros-header">
-        <h1>Todos los Registros</h1>
+        <h1>Todos los Registros (Admin)</h1>
         <div className="search-box">
           <input
             type="text"
@@ -139,3 +137,4 @@ export const Registros = () => {
     </div>
   );
 };
+

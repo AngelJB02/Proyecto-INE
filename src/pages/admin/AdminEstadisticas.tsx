@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react';
-import type { EstadisticasGeneral, FiltrosEstadisticas, RegistroINE, NumeroAsignado } from '../types';
-import { estadisticasService, registrosService } from '../services/api';
-import { StatsCard } from '../components/StatsCard';
-import { BarChart } from '../components/BarChart';
+import type { EstadisticasGeneral, FiltrosEstadisticas, RegistroINE } from '../../types';
+import { estadisticasService, registrosService } from '../../services/api';
+import { StatsCard } from '../../components/StatsCard';
+import { BarChart } from '../../components/BarChart';
 import { format } from 'date-fns';
-import { FiBarChart2, FiUser, FiSmartphone, FiCalendar, FiArrowUp, FiMapPin, FiFileText } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
-import '../styles/Estadisticas.css';
+import { FiBarChart2, FiSmartphone, FiCalendar, FiArrowUp, FiMapPin, FiFileText } from 'react-icons/fi';
+import '../../styles/Estadisticas.css';
 
-export const Estadisticas = () => {
-  const { usuario: usuarioActual } = useAuth();
+export const AdminEstadisticas = () => {
   const [selectorValor, setSelectorValor] = useState<string | null>(null);
-  const [misNumeros, setMisNumeros] = useState<NumeroAsignado[]>([]);
+  const [todosLosNumeros, setTodosLosNumeros] = useState<{ numero: string; nombre: string }[]>([]);
   const [estadisticas, setEstadisticas] = useState<EstadisticasGeneral | null>(null);
   const [registrosRecientes, setRegistrosRecientes] = useState<RegistroINE[]>([]);
   const [filtros, setFiltros] = useState<FiltrosEstadisticas>({});
@@ -20,42 +18,36 @@ export const Estadisticas = () => {
   const [periodoTiempo, setPeriodoTiempo] = useState<string>('todo');
 
   useEffect(() => {
-    cargarMisNumeros();
-  }, [usuarioActual]);
+    cargarEstadisticasGenerales();
+  }, []);
 
   useEffect(() => {
-    if (selectorValor) {
-      cargarEstadisticas();
-      cargarRegistrosRecientes();
-    } else {
-      setEstadisticas(null);
-      setRegistrosRecientes([]);
-    }
+    cargarEstadisticas();
+    cargarRegistrosRecientes();
   }, [selectorValor, filtros]);
 
-  
-
-  const cargarMisNumeros = async () => {
+  const cargarEstadisticasGenerales = async () => {
     try {
-      console.log('🔄 Iniciando carga de mis números...');
       setIsLoading(true);
       setError(null);
-      const numeros = await registrosService.getMisNumeros();
-      console.log('✅ Números cargados:', numeros);
-      setMisNumeros(numeros);
+      const stats = await estadisticasService.getGeneralAdmin();
+      setEstadisticas(stats);
+      if (stats.registros_por_numero && stats.registros_por_numero.length > 0) {
+        const numeros = (stats.registros_por_numero as any[]).map((item: any) => ({
+          numero: item.numero_whatsapp || item.numero,
+          nombre: item.numero
+        }));
+        setTodosLosNumeros(numeros);
+      }
     } catch (error: any) {
-      console.error('❌ Error cargando números:', error);
-      console.error('Error completo:', error.response?.data || error.message);
-      setError('Error al cargar tus empleados/números.');
+      setError('Error al cargar las estadísticas generales.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Utilidad para saber si es número
   const esNumero = (valor: string | null) => {
     if (!valor) return false;
-    // Considera número si solo contiene dígitos y opcionalmente +
     return /^\+?\d{8,}$/.test(valor);
   };
 
@@ -63,18 +55,17 @@ export const Estadisticas = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      let data: EstadisticasGeneral | undefined;
+      let filtro: any = { ...filtros };
       if (selectorValor) {
-        data = await estadisticasService.getGeneral({ 
-          ...filtros,
-          from_number: selectorValor
-        });
+        if (esNumero(selectorValor)) {
+          filtro.from_number = selectorValor;
+        } else {
+          filtro.nombre_contacto = selectorValor;
+        }
       }
-      
+      const data = await estadisticasService.getGeneralAdmin(filtro);
       setEstadisticas(data || null);
     } catch (error) {
-      console.error('Error cargando estadísticas:', error);
       setError('Error al cargar las estadísticas');
       setEstadisticas(null);
     } finally {
@@ -85,16 +76,18 @@ export const Estadisticas = () => {
   const cargarRegistrosRecientes = async () => {
     try {
       setError(null);
-      
-      let registros;
+      let filtro: any = { page: 1 };
       if (selectorValor) {
-        const response = await registrosService.getAll({ page: 1, from_number: selectorValor });
-        registros = response.data.slice(0, 10);
+        if (esNumero(selectorValor)) {
+          filtro.from_number = selectorValor;
+        } else {
+          filtro.nombre_contacto = selectorValor;
+        }
       }
-      
+      const response = await registrosService.getAllAdmin(filtro);
+      const registros = response.data.slice(0, 10);
       setRegistrosRecientes(registros || []);
     } catch (error) {
-      console.error('Error cargando registros recientes:', error);
       setError('Error al cargar los registros recientes');
       setRegistrosRecientes([]);
     }
@@ -109,38 +102,32 @@ export const Estadisticas = () => {
 
   const handlePeriodoTiempoChange = (periodo: string) => {
     setPeriodoTiempo(periodo);
-    
     const hoy = new Date();
     let fechaInicio: string | undefined;
     let fechaFin: string | undefined;
-
     switch (periodo) {
       case 'hoy':
         fechaInicio = hoy.toISOString().split('T')[0];
         fechaFin = hoy.toISOString().split('T')[0];
         break;
-      
       case 'ayer':
         const ayer = new Date(hoy);
         ayer.setDate(ayer.getDate() - 1);
         fechaInicio = ayer.toISOString().split('T')[0];
         fechaFin = ayer.toISOString().split('T')[0];
         break;
-      
       case 'ultimos7':
         const hace7dias = new Date(hoy);
         hace7dias.setDate(hace7dias.getDate() - 7);
         fechaInicio = hace7dias.toISOString().split('T')[0];
         fechaFin = hoy.toISOString().split('T')[0];
         break;
-      
       case 'ultimos30':
         const hace30dias = new Date(hoy);
         hace30dias.setDate(hace30dias.getDate() - 30);
         fechaInicio = hace30dias.toISOString().split('T')[0];
         fechaFin = hoy.toISOString().split('T')[0];
         break;
-      
       case 'estaSemana':
         const inicioSemana = new Date(hoy);
         const diaSemana = inicioSemana.getDay();
@@ -149,27 +136,23 @@ export const Estadisticas = () => {
         fechaInicio = inicioSemana.toISOString().split('T')[0];
         fechaFin = hoy.toISOString().split('T')[0];
         break;
-      
       case 'esteMes':
         const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
         fechaInicio = inicioMes.toISOString().split('T')[0];
         fechaFin = hoy.toISOString().split('T')[0];
         break;
-      
       case 'mesAnterior':
         const inicioMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
         const finMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
         fechaInicio = inicioMesAnterior.toISOString().split('T')[0];
         fechaFin = finMesAnterior.toISOString().split('T')[0];
         break;
-      
       case 'todo':
       default:
         fechaInicio = undefined;
         fechaFin = undefined;
         break;
     }
-
     setFiltros(prev => ({
       ...prev,
       fecha_inicio: fechaInicio,
@@ -179,70 +162,48 @@ export const Estadisticas = () => {
 
   const handleSelectorChange = (valor: string) => {
     setSelectorValor(valor || null);
-    setFiltros({}); // Limpiar filtros
-    setPeriodoTiempo('todo'); // Resetear período de tiempo
+    setFiltros({});
+    setPeriodoTiempo('todo');
   };
 
-  const numeroMostrado = misNumeros.find(n => n.numero_whatsapp === selectorValor);
+  const numeroMostrado = todosLosNumeros.find(n => n.numero === selectorValor);
 
   return (
     <div className="estadisticas-page">
       <h1>
         <FiBarChart2 style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
-        Mis Estadísticas
+        Estadísticas Generales
       </h1>
-      
-      <div className="empleado-selector">
-        <label htmlFor="numero-select">Seleccionar Empleado/Número:</label>
-        {isLoading && misNumeros.length === 0 ? (
-          <div className="loading-empleados">Cargando empleados...</div>
-        ) : error && misNumeros.length === 0 ? (
-          <div className="error-empleados">
-            {error}
-            <button onClick={cargarMisNumeros} className="btn-reintentar">Reintentar</button>
-          </div>
-        ) : (
-          <>
-            <select
-              id="numero-select"
-              value={selectorValor || ''}
-              onChange={(e) => handleSelectorChange(e.target.value)}
-              className="empleado-dropdown"
-              disabled={misNumeros.length === 0}
-            >
-              <option value="">-- Selecciona un empleado --</option>
-              {misNumeros.map(numero => (
-                <option key={numero.id} value={numero.numero_whatsapp}>
-                  {numero.nombre_contacto || numero.numero_whatsapp}
-                </option>
-              ))}
-            </select>
-            {misNumeros.length === 0 && (
-              <p className="no-empleados">No tienes empleados asignados</p>
-            )}
-          </>
-        )}
-      </div>
 
-      {!selectorValor ? (
-        <div className="empty-state">
-          <p>
-            <FiUser style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
-            Selecciona un empleado para ver sus estadísticas detalladas
-          </p>
+      {todosLosNumeros.length > 0 && (
+        <div className="empleado-selector">
+          <label htmlFor="numero-select">Filtrar por Número/Empleado (Opcional):</label>
+          <select
+            id="numero-select"
+            value={selectorValor || ''}
+            onChange={(e) => handleSelectorChange(e.target.value)}
+            className="empleado-dropdown"
+          >
+            <option value="">-- Todos los registros --</option>
+            {todosLosNumeros.map((numero, index) => (
+              <option key={index} value={numero.numero}>
+                {numero.nombre}
+              </option>
+            ))}
+          </select>
         </div>
-      ) : isLoading ? (
+      )}
+
+      {isLoading ? (
         <div className="loading">Cargando estadísticas...</div>
       ) : error ? (
         <div className="error-message">{error}</div>
       ) : (
         <>
-          {/* Información del empleado/número */}
-          {selectorValor && (
+          {(selectorValor || numeroMostrado) && (
             <div className="empleado-info">
               <h2>
-                <FiUser style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
-                {numeroMostrado ? numeroMostrado.nombre_contacto || numeroMostrado.numero_whatsapp : 'Empleado'}
+                {numeroMostrado ? numeroMostrado.nombre : 'Empleado/Número'}
               </h2>
               <p className="empleado-details">
                 <span>
@@ -252,7 +213,7 @@ export const Estadisticas = () => {
               </p>
             </div>
           )}
-          
+
           <div className="filtros-container">
             <div className="filtro-group filtro-periodo">
               <label>Período de Tiempo</label>
@@ -279,11 +240,11 @@ export const Estadisticas = () => {
                 value={filtros.fecha_inicio || ''}
                 onChange={(e) => {
                   handleFiltroChange('fecha_inicio', e.target.value);
-                  setPeriodoTiempo(''); // Limpiar período predefinido
+                  setPeriodoTiempo('');
                 }}
               />
             </div>
-            
+
             <div className="filtro-group">
               <label>Fecha Fin</label>
               <input
@@ -291,7 +252,7 @@ export const Estadisticas = () => {
                 value={filtros.fecha_fin || ''}
                 onChange={(e) => {
                   handleFiltroChange('fecha_fin', e.target.value);
-                  setPeriodoTiempo(''); // Limpiar período predefinido
+                  setPeriodoTiempo('');
                 }}
               />
             </div>
@@ -299,7 +260,6 @@ export const Estadisticas = () => {
 
           {estadisticas && (
             <>
-              {/* Tarjetas de estadísticas del empleado */}
               <div className="stats-cards-container">
                 <StatsCard 
                   title="Total Registros" 
@@ -321,7 +281,6 @@ export const Estadisticas = () => {
                 />
               </div>
 
-              {/* Gráficos del empleado */}
               <div className="charts-container">
                 <div className="chart-section">
                   <h2>
@@ -334,55 +293,6 @@ export const Estadisticas = () => {
                     categoryKey="estado" 
                     color="#8884d8" 
                   />
-                  
-                  <div className="porcentajes-tabla" style={{ marginTop: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                      Porcentaje por Estado
-                    </h3>
-                    <table className="tabla-porcentajes">
-                      <thead>
-                        <tr>
-                          <th>Estado</th>
-                          <th>Cantidad</th>
-                          <th>Porcentaje</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {estadisticas.registros_por_estado.map((item, index) => {
-                          const porcentaje = estadisticas.totalRegistros > 0 
-                            ? ((item.cantidad / estadisticas.totalRegistros) * 100).toFixed(1)
-                            : '0.0';
-                          return (
-                            <tr key={index}>
-                              <td>{item.estado}</td>
-                              <td>{item.cantidad}</td>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                  <div style={{ 
-                                    flex: 1, 
-                                    height: '8px', 
-                                    backgroundColor: '#e5e7eb', 
-                                    borderRadius: '4px',
-                                    overflow: 'hidden'
-                                  }}>
-                                    <div style={{ 
-                                      width: `${porcentaje}%`, 
-                                      height: '100%', 
-                                      backgroundColor: '#8884d8',
-                                      transition: 'width 0.3s ease'
-                                    }}></div>
-                                  </div>
-                                  <span style={{ fontWeight: '600', minWidth: '50px' }}>
-                                    {porcentaje}%
-                                  </span>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
                 </div>
 
                 <div className="chart-section">
@@ -399,7 +309,6 @@ export const Estadisticas = () => {
                 </div>
               </div>
 
-              {/* Registros recientes */}
               <div className="registros-recientes">
                 <h2>
                   <FiFileText style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
@@ -426,7 +335,6 @@ export const Estadisticas = () => {
                       ))}
                     </tbody>
                   </table>
-                  
                   {registrosRecientes.length === 0 && (
                     <p className="no-data">No se encontraron registros recientes</p>
                   )}
@@ -439,3 +347,4 @@ export const Estadisticas = () => {
     </div>
   );
 };
+
