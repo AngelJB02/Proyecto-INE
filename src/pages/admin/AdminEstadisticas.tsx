@@ -214,14 +214,51 @@ export const AdminEstadisticas = () => {
             </div>
           )}
 
-          <div className="filtros-container">
-            <div className="filtro-group filtro-periodo">
-              <label>Período de Tiempo</label>
-              <select
-                value={periodoTiempo}
-                onChange={(e) => handlePeriodoTiempoChange(e.target.value)}
-                className="select-periodo"
+        <div className="filtros-container">
+          <div className="filtro-group filtro-periodo">
+            <label>Período de Tiempo</label>
+            <div className="segmented-control">
+              <button
+                type="button"
+                className={`segmented-button ${periodoTiempo === 'todo' ? 'active' : ''}`}
+                onClick={() => handlePeriodoTiempoChange('todo')}
               >
+                Todo
+              </button>
+              <button
+                type="button"
+                className={`segmented-button ${periodoTiempo === 'hoy' ? 'active' : ''}`}
+                onClick={() => handlePeriodoTiempoChange('hoy')}
+              >
+                Hoy
+              </button>
+              <button
+                type="button"
+                className={`segmented-button ${periodoTiempo === 'ayer' ? 'active' : ''}`}
+                onClick={() => handlePeriodoTiempoChange('ayer')}
+              >
+                Ayer
+              </button>
+              <button
+                type="button"
+                className={`segmented-button ${periodoTiempo === 'ultimos7' ? 'active' : ''}`}
+                onClick={() => handlePeriodoTiempoChange('ultimos7')}
+              >
+                7 días
+              </button>
+              <button
+                type="button"
+                className={`segmented-button ${periodoTiempo === 'ultimos30' ? 'active' : ''}`}
+                onClick={() => handlePeriodoTiempoChange('ultimos30')}
+              >
+                30 días
+              </button>
+            </div>
+            <select
+              value={periodoTiempo}
+              onChange={(e) => handlePeriodoTiempoChange(e.target.value)}
+              className="select-periodo"
+            >
                 <option value="todo">Todo el tiempo</option>
                 <option value="hoy">Hoy</option>
                 <option value="ayer">Ayer</option>
@@ -287,27 +324,45 @@ export const AdminEstadisticas = () => {
                     <FiMapPin style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
                     Distribución por Estado
                   </h2>
-                  <BarChart 
-                    data={estadisticas.registros_por_estado} 
-                    dataKey="cantidad" 
-                    categoryKey="estado" 
-                    color="#8884d8" 
-                  />
-                </div>
-
-                <div className="chart-section">
-                  <h2>
-                    <FiFileText style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
-                    Registros por Sección
-                  </h2>
-                  <BarChart 
-                    data={estadisticas.registros_por_seccion.slice(0, 8)} 
-                    dataKey="cantidad" 
-                    categoryKey="seccion" 
-                    color="#82ca9d" 
-                  />
-                </div>
+              <BarChart 
+                data={estadisticas.registros_por_estado} 
+                dataKey="cantidad" 
+                categoryKey="estado" 
+                color="#8884d8" 
+              />
+              <div className="chart-legend">
+                <span className="legend-item">
+                  <span className="legend-swatch purple"></span>
+                  Cantidad por estado
+                </span>
+                <span className="legend-note">
+                  Porcentajes calculados sobre el total mostrado.
+                </span>
               </div>
+            </div>
+
+            <div className="chart-section">
+              <h2>
+                <FiFileText style={{ display: 'inline-block', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                Registros por Sección
+              </h2>
+              <BarChart 
+                data={estadisticas.registros_por_seccion.slice(0, 8)} 
+                dataKey="cantidad" 
+                categoryKey="seccion" 
+                color="#82ca9d" 
+              />
+              <div className="chart-legend">
+                <span className="legend-item">
+                  <span className="legend-swatch green"></span>
+                  Cantidad por sección
+                </span>
+                <span className="legend-note">
+                  Muestra las 8 secciones con más registros.
+                </span>
+              </div>
+            </div>
+          </div>
 
               <div className="registros-recientes">
                 <h2>
@@ -347,4 +402,3 @@ export const AdminEstadisticas = () => {
     </div>
   );
 };
-

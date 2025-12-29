@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { FiBarChart2, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
+import { useAuth } from '../hooks/useAuth';
+import { FiBarChart2, FiUser, FiLogOut } from 'react-icons/fi';
 import '../styles/Layout.css';
 import type { ReactNode } from 'react';
 

@@ -1,1 +1,33 @@
 /* Estilos globales para App */
+@import url('./tokens.css');
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+  padding: 2rem;
+}
+
+.loading::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid #e5e7eb;
+  border-top-color: var(--primary-color);
+  animation: spin var(--transition-base) linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -28,8 +28,37 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Inicializar contador de intentos en peticiones GET idempotentes
+  if (!config.method || config.method.toUpperCase() === 'GET') {
+    (config as any).__retryCount = (config as any).__retryCount ?? 0;
+  }
   return config;
 });
+
+// Interceptor de respuesta para reintentos suaves en GET ante 503 o errores de red
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config || {};
+    const method = (config.method || 'GET').toUpperCase();
+    const status = error?.response?.status;
+    const isNetworkError = !error.response && (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED');
+    const shouldRetry = method === 'GET' && ((status === 503) || isNetworkError);
+    if (!shouldRetry) {
+      return Promise.reject(error);
+    }
+    const maxRetries = 3;
+    const baseDelay = 500;
+    const attempt = ((config as any).__retryCount ?? 0) + 1;
+    if (attempt > maxRetries) {
+      return Promise.reject(error);
+    }
+    (config as any).__retryCount = attempt;
+    const wait = baseDelay * Math.pow(2, attempt - 1) + Math.floor(baseDelay * 0.1 * Math.random());
+    await new Promise((resolve) => setTimeout(resolve, wait));
+    return apiClient(config);
+  }
+);
 
 // Servicios de autenticación
 export const authService = {

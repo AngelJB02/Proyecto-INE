@@ -5,7 +5,7 @@ import { StatsCard } from '../components/StatsCard';
 import { BarChart } from '../components/BarChart';
 import { format } from 'date-fns';
 import { FiBarChart2, FiUser, FiSmartphone, FiCalendar, FiArrowUp, FiMapPin, FiFileText } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import '../styles/Estadisticas.css';
 
 export const Estadisticas = () => {
@@ -50,13 +50,6 @@ export const Estadisticas = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Utilidad para saber si es número
-  const esNumero = (valor: string | null) => {
-    if (!valor) return false;
-    // Considera número si solo contiene dígitos y opcionalmente +
-    return /^\+?\d{8,}$/.test(valor);
   };
 
   const cargarEstadisticas = async () => {
@@ -256,6 +249,43 @@ export const Estadisticas = () => {
           <div className="filtros-container">
             <div className="filtro-group filtro-periodo">
               <label>Período de Tiempo</label>
+              <div className="segmented-control">
+                <button
+                  type="button"
+                  className={`segmented-button ${periodoTiempo === 'todo' ? 'active' : ''}`}
+                  onClick={() => handlePeriodoTiempoChange('todo')}
+                >
+                  Todo
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-button ${periodoTiempo === 'hoy' ? 'active' : ''}`}
+                  onClick={() => handlePeriodoTiempoChange('hoy')}
+                >
+                  Hoy
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-button ${periodoTiempo === 'ayer' ? 'active' : ''}`}
+                  onClick={() => handlePeriodoTiempoChange('ayer')}
+                >
+                  Ayer
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-button ${periodoTiempo === 'ultimos7' ? 'active' : ''}`}
+                  onClick={() => handlePeriodoTiempoChange('ultimos7')}
+                >
+                  7 días
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-button ${periodoTiempo === 'ultimos30' ? 'active' : ''}`}
+                  onClick={() => handlePeriodoTiempoChange('ultimos30')}
+                >
+                  30 días
+                </button>
+              </div>
               <select
                 value={periodoTiempo}
                 onChange={(e) => handlePeriodoTiempoChange(e.target.value)}
@@ -334,6 +364,15 @@ export const Estadisticas = () => {
                     categoryKey="estado" 
                     color="#8884d8" 
                   />
+                  <div className="chart-legend">
+                    <span className="legend-item">
+                      <span className="legend-swatch purple"></span>
+                      Cantidad por estado
+                    </span>
+                    <span className="legend-note">
+                      Porcentajes calculados sobre el total mostrado.
+                    </span>
+                  </div>
                   
                   <div className="porcentajes-tabla" style={{ marginTop: '1.5rem' }}>
                     <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
@@ -396,6 +435,15 @@ export const Estadisticas = () => {
                     categoryKey="seccion" 
                     color="#82ca9d" 
                   />
+                  <div className="chart-legend">
+                    <span className="legend-item">
+                      <span className="legend-swatch green"></span>
+                      Cantidad por sección
+                    </span>
+                    <span className="legend-note">
+                      Muestra las 8 secciones con más registros.
+                    </span>
+                  </div>
                 </div>
               </div>
 

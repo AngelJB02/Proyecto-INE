@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import type { EstadoStats, RegistroGeo } from '../types';
 import { mapaService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import { 
   agruparRegistrosPorMunicipio,
   type MunicipioConRegistros 
@@ -34,7 +33,6 @@ function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<L.Map | null
 }
 
 export const Mapa = () => {
-  const { usuario } = useAuth();
   const [estadosData, setEstadosData] = useState<EstadoStats[]>([]);
   const [estadosDetectados, setEstadosDetectados] = useState<Map<string, EstadoConMunicipios>>(new Map());
   const [registrosGeo, setRegistrosGeo] = useState<RegistroGeo[]>([]);

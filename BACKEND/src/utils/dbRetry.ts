@@ -32,14 +32,17 @@ export async function retryQuery<T>(
         error.code === 'ECONNRESET' ||
         error.code === 'PROTOCOL_CONNECTION_LOST' ||
         error.code === 'ETIMEDOUT' ||
-        error.code === 'ECONNREFUSED';
+        error.code === 'ECONNREFUSED' ||
+        error.code === 'ER_LOCK_DEADLOCK';
       
       if (!isConnectionError || attempt === maxRetries) {
         throw error;
       }
       
       // Calcular delay con backoff exponencial si está habilitado
-      const waitTime = backoff ? delay * Math.pow(2, attempt) : delay;
+      const base = backoff ? delay * Math.pow(2, attempt) : delay;
+      const jitter = Math.floor(base * 0.1 * Math.random()); // +/-10%
+      const waitTime = base + jitter;
       
       console.log(
         `⚠️ Error de conexión (${error.code}), reintentando en ${waitTime}ms... ` +

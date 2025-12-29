@@ -3,10 +3,8 @@ import type { RegistroINE } from '../types';
 import { format } from 'date-fns';
 import '../styles/Registros.css';
 import { registrosService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 
 export const Registros = () => {
-  const { usuario } = useAuth();
   const [registros, setRegistros] = useState<RegistroINE[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
@@ -59,7 +57,23 @@ export const Registros = () => {
       </div>
 
       {isLoading ? (
-        <div className="loading">Cargando registros...</div>
+        <div className="tabla-container">
+          <div className="skeleton-table">
+            {[...Array(8)].map((_, idx) => (
+              <div key={idx} className="skeleton-row">
+                <div className="skeleton skeleton-cell w-col-1"></div>
+                <div className="skeleton skeleton-cell w-col-2"></div>
+                <div className="skeleton skeleton-cell w-col-3"></div>
+                <div className="skeleton skeleton-cell w-col-4"></div>
+                <div className="skeleton skeleton-cell w-col-5"></div>
+                <div className="skeleton skeleton-cell w-col-6"></div>
+                <div className="skeleton skeleton-cell w-col-7"></div>
+                <div className="skeleton skeleton-cell w-col-8"></div>
+                <div className="skeleton skeleton-cell w-col-9"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <>
           <div className="registros-count">

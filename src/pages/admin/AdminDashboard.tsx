@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { estadisticasService, adminService } from '../../services/api';
 import { StatsCard } from '../../components/StatsCard';
 import { BarChart } from '../../components/BarChart';

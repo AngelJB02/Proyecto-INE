@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { FiBarChart2, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
 import '../styles/Layout.css';
 import type { ReactNode } from 'react';
@@ -22,7 +22,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <div className="layout">
-      <nav className="navbar">
+      <nav className="navbar admin-navbar">
         <div className="navbar-brand">
           <h2>
             <FiBarChart2 className="brand-icon" />
@@ -84,4 +84,3 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     </div>
   );
 };
-

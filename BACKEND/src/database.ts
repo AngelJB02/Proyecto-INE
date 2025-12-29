@@ -28,19 +28,20 @@ function createPoolConnection(): Pool {
     database: dbConfig.database,
     port: dbConfig.port,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 20,
     queueLimit: 0,
     // Configuraciones para manejar conexiones perdidas
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
     // Timeout configurations
-    connectTimeout: 60000, // 60 segundos
+    connectTimeout: 10000, // 10 segundos
     // Manejo de desconexiones
     maxIdle: 10, // Máximo de conexiones inactivas
     idleTimeout: 60000, // Cerrar conexiones inactivas después de 60 segundos
     // Configuraciones adicionales para estabilidad
-    // ssl: false, // Eliminar o comentar para evitar error de tipo
     multipleStatements: false,
+    supportBigNumbers: true,
+    dateStrings: true,
   });
 }
 
@@ -105,8 +106,8 @@ async function ensureConnection() {
   }
 }
 
-// Verificar conexión periódicamente (cada 60 segundos para no ser tan agresivo)
-setInterval(ensureConnection, 60000); // Cada 60 segundos
+// Verificar conexión periódicamente (cada 30 segundos para mantener sockets activos)
+setInterval(ensureConnection, 30000); // Cada 30 segundos
 
 export { pool };
 
