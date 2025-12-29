@@ -23,6 +23,7 @@ export interface RegistroINE {
   Vigencia: string | null;
   fecha_registro: Date;
   nombre_contacto: string;
+  imagen_url?: string;
 }
 
 export interface CodigoPostal {
