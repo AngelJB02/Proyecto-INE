@@ -1,82 +1,3 @@
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.dashboard-header {
-  animation: slideDown 0.5s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dashboard-header h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
-}
-
-.dashboard-header p {
-  color: var(--text-secondary);
-  font-size: 1.125rem;
-  font-weight: 500;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.75rem;
-  animation: fadeInUp 0.6s ease-out 0.1s both;
-}
-
-.stats-grid > *:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.stats-grid > *:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.stats-grid > *:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.stats-grid > *:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-.charts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: 2rem;
-  animation: fadeInUp 0.6s ease-out 0.3s both;
-}
-
 .chart-card {
   background: white;
   padding: 2rem;
@@ -84,6 +5,14 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Grid para las tarjetas de estadísticas en escritorio */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .chart-card:hover {
@@ -133,13 +62,31 @@
   line-height: 1.6;
 }
 
+/* Mobile Cards Styles */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: block;
+}
+
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
   .charts-container {
     grid-template-columns: 1fr;
   }
   
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
   }
 
   .dashboard-header h1 {
@@ -148,5 +95,93 @@
 
   .chart-card {
     padding: 1.5rem;
+  }
+
+  .admin-section {
+    padding: 1.5rem;
+  }
+
+  .mobile-cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .mobile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  .mobile-card-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .mobile-card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+  }
+
+  .count-badge {
+    background: #e5e7eb;
+    color: #374151;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .tag-blue {
+    background: #eef2ff;
+    color: #3730a3;
+  }
+
+  .tag-red {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .empty-text {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  .warning-card {
+    border-left: 4px solid #ef4444;
+  }
+
+  .text-red {
+    color: #b91c1c;
+  }
+
+  .badge-red {
+    background: #fee2e2;
+    color: #991b1b;
   }
 }

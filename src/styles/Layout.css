@@ -1,5 +1,5 @@
 .layout {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--background-gradient);
@@ -267,6 +267,46 @@
   margin: 0 auto;
 }
 
+/* Bottom Navigation (mobile) */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  border-top: 1px solid var(--border-color);
+  display: none;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav ul {
+  display: flex;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  list-style: none;
+  justify-content: space-around;
+  align-items: center;
+}
+.bottom-nav a {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-secondary);
+  min-width: 44px;
+  min-height: 44px;
+  gap: 0.25rem;
+}
+.bottom-nav a.active {
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .bottom-nav { display: block; }
+}
+
 @media (max-width: 1024px) {
   .navbar-menu {
     gap: 0.25rem;
@@ -280,62 +320,76 @@
 
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-    padding: 1rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    height: 64px;
   }
   
   .navbar-brand {
-    width: 100%;
+    width: auto;
+  }
+
+  .navbar-brand h2 {
+    font-size: 1.1rem;
   }
   
   .navbar-menu {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    display: none;
   }
   
   .navbar-user {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-  
-  .user-info-card {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .btn-logout {
-    flex: 1;
-    justify-content: center;
-    min-width: 140px;
-  }
-  
-  .main-content {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .navbar-user {
-    flex-direction: column;
+    width: auto;
+    justify-content: flex-end;
     gap: 0.75rem;
   }
   
-  .user-info-card,
-  .btn-logout {
-    width: 100%;
+  .user-info-card {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
-  
-  .btn-logout span {
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    box-shadow: none;
+  }
+
+  .user-info-card:hover {
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .user-details {
     display: none;
   }
   
   .btn-logout {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    min-width: auto;
+    border-radius: 50%;
     justify-content: center;
-    padding: 0.625rem;
+    box-shadow: none;
+  }
+  
+  .btn-logout svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .btn-logout span {
+    display: none;
+  }
+  
+  .main-content {
+    padding: 1rem;
+    padding-bottom: 90px; /* Space for bottom nav */
   }
 }

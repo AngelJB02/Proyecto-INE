@@ -68,7 +68,7 @@
 .tabla-registros {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  /* eliminamos ancho mínimo fijo para mobile-first */
 }
 
 .tabla-registros th,
@@ -252,3 +252,47 @@
 .w-col-7 { width: 100%; }
 .w-col-8 { width: 100%; }
 .w-col-9 { width: 100%; }
+/* Cards en móvil */
+.cards-list {
+  display: none;
+  padding: 1rem;
+}
+.registro-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.registro-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+.registro-card-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+.registro-card-meta {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.registro-card-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+}
+@media (max-width: 768px) {
+  .tabla-container .tabla-registros {
+    display: none;
+  }
+  .cards-list {
+    display: block;
+  }
+}

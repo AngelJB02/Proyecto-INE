@@ -209,6 +209,36 @@ export const AdminRegistros = () => {
                 ))}
               </tbody>
             </table>
+            <div className="cards-list">
+              {registrosFiltrados.map((registro, index) => (
+                <div key={registro.id} className="registro-card">
+                  <div className="registro-card-header">
+                    <div className="registro-card-title">
+                      #{index + 1} · {registro.Nombre || 'Sin nombre'}
+                    </div>
+                    <div className="registro-card-meta">
+                      {format(new Date(registro.fecha_registro), 'dd/MM/yyyy HH:mm')}
+                    </div>
+                  </div>
+                  <div className="registro-card-meta">
+                    Operador: {registro.nombre_contacto} · CURP: {registro.CURP || 'N/A'} · Sección: {registro.Seccion || 'N/A'}
+                  </div>
+                  <div className="registro-card-actions">
+                    <button
+                      className="btn-ver-imagen"
+                      disabled={!resolveImageUrl(registro)}
+                      onClick={() => handleVerImagen(registro)}
+                      title={resolveImageUrl(registro) ? 'Ver imagen' : 'Sin imagen disponible'}
+                    >
+                      Ver imagen
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {registrosFiltrados.length === 0 && (
+                <p className="no-data">No se encontraron registros</p>
+              )}
+            </div>
             
             {registrosFiltrados.length === 0 && (
               <p className="no-data">No se encontraron registros</p>

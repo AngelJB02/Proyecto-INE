@@ -177,7 +177,9 @@ export const AdminDashboard = () => {
         <p className="info-text">
           Distribución de números asignados por cada usuario. Los números observados en registros pero sin cliente se destacan como “Sin Cliente”.
         </p>
-        <div className="tabla-container" style={{ marginTop: '1rem' }}>
+        
+        {/* Vista Desktop (Tabla) */}
+        <div className="tabla-container desktop-only" style={{ marginTop: '1rem' }}>
           <table className="tabla-registros">
             <thead>
               <tr>
@@ -254,9 +256,9 @@ export const AdminDashboard = () => {
                   </td>
                   <td>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {numerosSinCliente.map(n => (
+                      {numerosSinCliente.map(num => (
                         <span
-                          key={n}
+                          key={num}
                           style={{
                             display: 'inline-block',
                             padding: '4px 8px',
@@ -266,7 +268,7 @@ export const AdminDashboard = () => {
                             fontSize: '0.85rem'
                           }}
                         >
-                          {n}
+                          {num}
                         </span>
                       ))}
                     </div>
@@ -275,6 +277,56 @@ export const AdminDashboard = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Vista Mobile (Cards) */}
+        <div className="mobile-cards-grid mobile-only">
+          {usuarios.map(u => {
+            const nums = numerosPorUsuario[u.id] || [];
+            return (
+              <div key={u.id} className="mobile-card">
+                <div className="mobile-card-header">
+                  <div className="mobile-card-title">
+                    <span className="user-name">{u.username || u.nombre || `Usuario ${u.id}`}</span>
+                    <span className="count-badge">{nums.length}</span>
+                  </div>
+                </div>
+                <div className="mobile-card-content">
+                  {nums.length === 0 ? (
+                    <p className="empty-text">Sin números asignados</p>
+                  ) : (
+                    <div className="tags-container">
+                      {nums.map(n => (
+                        <span key={n.id} className="tag tag-blue">
+                          {n.nombre_contacto || n.numero_whatsapp}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          
+          {numerosSinCliente.length > 0 && (
+            <div className="mobile-card warning-card">
+              <div className="mobile-card-header">
+                <div className="mobile-card-title">
+                  <span className="user-name text-red">Sin Cliente</span>
+                  <span className="count-badge badge-red">{numerosSinCliente.length}</span>
+                </div>
+              </div>
+              <div className="mobile-card-content">
+                <div className="tags-container">
+                  {numerosSinCliente.map(num => (
+                    <span key={num} className="tag tag-red">
+                      {num}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

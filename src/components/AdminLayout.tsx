@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { FiBarChart2, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
+import { FiBarChart2, FiUser, FiLogOut, FiSettings, FiPieChart, FiMap, FiList } from 'react-icons/fi';
 import '../styles/Layout.css';
 import type { ReactNode } from 'react';
 
@@ -81,6 +81,41 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
       <main className="main-content">
         {children}
       </main>
+      
+      <nav className="bottom-nav" aria-label="Navegación inferior">
+        <ul>
+          <li>
+            <Link to="/dashboard" className={isActive('/dashboard') ? 'active' : ''}>
+              <FiBarChart2 size={24} />
+              <span>Dashboard</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/estadisticas" className={isActive('/estadisticas') ? 'active' : ''}>
+              <FiPieChart size={24} />
+              <span>Estadísticas</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/mapa" className={isActive('/mapa') ? 'active' : ''}>
+              <FiMap size={24} />
+              <span>Mapa</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/registros" className={isActive('/registros') ? 'active' : ''}>
+              <FiList size={24} />
+              <span>Registros</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin" className={isActive('/admin') ? 'active' : ''}>
+              <FiSettings size={24} />
+              <span>Admin</span>
+            </Link>
+          </li>
+        </ul>
+      </nav>
     </div>
   );
 };
